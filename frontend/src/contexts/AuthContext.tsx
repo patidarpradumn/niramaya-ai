@@ -6,7 +6,13 @@ import { authAPI } from '../services/api/authService';
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string, role?: UserRole) => Promise<void>;
-  register: (email: string, password: string, fullName: string, role: UserRole) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    fullName: string,
+    role: UserRole,
+    meta?: { state_id?: number; district_id?: number; facility_id?: number }
+  ) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -86,7 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, fullName: string, role: UserRole) => {
+  const register = async (
+    email: string,
+    password: string,
+    fullName: string,
+    role: UserRole,
+    meta?: { state_id?: number; district_id?: number; facility_id?: number }
+  ) => {
     setIsLoading(true);
     try {
       // 1. Create user in Firebase
@@ -94,8 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
       
-      // 2. We don't set access_token in localStorage yet, because if they are pending, 
-      // we shouldn't fully log them in. But we need a token to register in the backend.
+      // 2. Set access_token in localStorage so API calls can authenticate
       localStorage.setItem('access_token', idToken);
       
       // 3. Create user in PostgreSQL application database
@@ -104,7 +115,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email,
           full_name: fullName,
           role: role,
-          firebase_uid: userCredential.user.uid
+          firebase_uid: userCredential.user.uid,
+          state_id: meta?.state_id,
+          district_id: meta?.district_id,
+          facility_id: meta?.facility_id,
         });
       } catch (error) {
         // Backend registration failed (or pending), we logout from firebase to prevent unapproved session

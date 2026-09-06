@@ -162,3 +162,46 @@ def list_public_services(db: Session = Depends(get_db)):
     ).distinct().order_by(FacilityService.service_name).all()
     
     return [s[0] for s in services]
+
+
+@router.get("/states")
+def list_public_states(db: Session = Depends(get_db)):
+    """List all states for registration and filtering."""
+    from app.models import State
+    states = db.query(State).order_by(State.name.asc()).all()
+    return [{"id": s.id, "name": s.name, "code": s.code} for s in states]
+
+
+@router.get("/districts")
+def list_public_districts(state_id: Optional[int] = None, db: Session = Depends(get_db)):
+    """List districts, optionally filtered by state_id."""
+    from app.models import District
+    query = db.query(District)
+    if state_id:
+        query = query.filter(District.state_id == state_id)
+    districts = query.order_by(District.name.asc()).all()
+    return [{"id": d.id, "name": d.name, "state_id": d.state_id} for d in districts]
+
+
+@router.get("/facilities-list")
+def list_facilities_compact(
+    district_id: Optional[int] = None,
+    state_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """List facilities in a compact format for registration selectors."""
+    from app.models import Facility, District
+    query = db.query(Facility).filter(Facility.is_active == True)
+    if district_id:
+        query = query.filter(Facility.district_id == district_id)
+    elif state_id:
+        query = query.join(District, Facility.district_id == District.id).filter(District.state_id == state_id)
+    facilities = query.order_by(Facility.name.asc()).all()
+    return [{
+        "id": f.id,
+        "name": f.name,
+        "type": f.type.value if hasattr(f.type, "value") else str(f.type),
+        "location": f.location,
+        "district_id": f.district_id
+    } for f in facilities]
+

@@ -15,6 +15,9 @@ export interface User {
   role: UserRole;
   state?: string;
   district?: string;
+  state_id?: number | string;
+  district_id?: number | string;
+  facility_id?: number | string;
   facilityId?: string;
   avatar?: string;
 }

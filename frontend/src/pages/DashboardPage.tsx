@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import {
   Building2, AlertTriangle, TrendingDown, Calendar, ArrowLeftRight, Wrench,
-  Filter, Zap, Clock, Bot, CheckCircle2, Info, AlertCircle
+  Filter, Zap, Clock, Bot, CheckCircle2, Info, AlertCircle, Layers
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -9,9 +9,10 @@ import {
 } from 'recharts';
 import { MetricCard } from '../components/ui/MetricCard';
 import { Card } from '../components/ui/Card';
-import { StatusBadge, ConfidenceBadge } from '../components/ui/Badge';
+import { ConfidenceBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { CardSkeleton } from '../components/ui/LoadingScreen';
+import { useAuth } from '../contexts/AuthContext';
 import {
   mockDashboardMetrics, mockStockRiskData, mockStockRisk30D, mockStockRisk90D,
   mockRiskDistribution, mockAISynthesis, mockAuditEvents
@@ -62,7 +63,6 @@ function NetworkVisualization() {
 
   return (
     <svg viewBox="0 0 100 90" className="w-full h-40" aria-label="Healthcare Network Visualization">
-      {/* Connection lines */}
       {connections.map(([from, to]) => {
         const a = nodeMap[from], b = nodeMap[to];
         return (
@@ -73,7 +73,6 @@ function NetworkVisualization() {
           />
         );
       })}
-      {/* Nodes */}
       {nodes.map(n => (
         <g key={n.id}>
           <circle cx={n.x} cy={n.y} r={n.size + 2} fill={statusColors[n.status]} opacity="0.15" />
@@ -105,6 +104,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [period, setPeriod] = useState<'7D' | '30D' | '90D'>('7D');
   const [isLoading] = useState(false);
   const [metrics] = useState(mockDashboardMetrics);
@@ -117,6 +117,47 @@ export default function DashboardPage() {
     { name: 'Logistics Delay', value: mockRiskDistribution.logisticsDelay },
   ];
 
+  // Role Configuration
+  const role = (user?.role || 'SUPER_ADMIN').toUpperCase();
+  
+  let dashboardTitle = 'National Health Command Center';
+  let dashboardSubtitle = 'Nationwide healthcare supply chain intelligence & policy oversight';
+  let scopeBadge = 'National Jurisdiction · Republic of India';
+  let primaryActionLabel = 'Run Diagnostics';
+  let secondaryActionLabel = 'Filter State';
+
+  if (role === 'STATE_ADMIN') {
+    dashboardTitle = 'State Healthcare Operations Command';
+    dashboardSubtitle = 'Statewide facility oversight, district reserves & emergency response';
+    scopeBadge = user?.state_id ? `State Jurisdiction · State ID ${user.state_id}` : 'State Jurisdiction · Maharashtra (MH)';
+    primaryActionLabel = 'Emergency Protocol';
+    secondaryActionLabel = 'District Overview';
+  } else if (role === 'DISTRICT_ADMIN') {
+    dashboardTitle = 'District Health Administration Dashboard';
+    dashboardSubtitle = 'District healthcare facilities, local drug distribution & stockout management';
+    scopeBadge = user?.district_id ? `District Jurisdiction · District ID ${user.district_id}` : 'District Jurisdiction · Pune District';
+    primaryActionLabel = 'District Dispatch';
+    secondaryActionLabel = 'Verify Clinics';
+  } else if (role === 'HOSPITAL_ADMIN') {
+    dashboardTitle = 'Hospital Facility Command Center';
+    dashboardSubtitle = 'Hospital inventory levels, batch expiry tracking, ICU oxygen & equipment uptime';
+    scopeBadge = user?.facility_id ? `Hospital Scope · Facility ID ${user.facility_id}` : 'Hospital Scope · KEM Hospital Mumbai';
+    primaryActionLabel = 'Order Medicines';
+    secondaryActionLabel = 'Log Maintenance';
+  } else if (role === 'FACILITY_STAFF') {
+    dashboardTitle = 'Facility Staff Operations & Dispensation';
+    dashboardSubtitle = 'Daily medicine consumption logging, low-stock warnings & local equipment checks';
+    scopeBadge = user?.facility_id ? `Staff Counter · Facility ID ${user.facility_id}` : 'Dispensation Counter · KEM Hospital';
+    primaryActionLabel = 'Log Consumption';
+    secondaryActionLabel = 'Stock Receive';
+  } else if (role === 'CITIZEN') {
+    dashboardTitle = 'Public Health & Medicine Availability Portal';
+    dashboardSubtitle = 'Find nearby healthcare facilities, verified medicine stocks & public health intelligence';
+    scopeBadge = 'Public Citizen Access';
+    primaryActionLabel = 'Find Medicines';
+    secondaryActionLabel = 'Nearby Facilities';
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -128,32 +169,40 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-            <Building2 size={20} className="text-white" />
+    <div className="space-y-6 animate-fade-in">
+      {/* Dynamic Role Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 rounded-2xl shadow-xl border border-white/10">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600/80 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 border border-blue-400/30">
+            <Building2 size={24} className="text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <StatusBadge status="Live Telemetry" />
-              <span className="text-xs text-gray-400">Updated {metrics.lastUpdated}</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/20">
+                <Layers size={10} />
+                {scopeBadge}
+              </span>
+              <span className="text-xs text-slate-400">Live Telemetry</span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">National Health Command</h1>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{dashboardTitle}</h1>
+            <p className="text-xs text-blue-200/70 mt-0.5">{dashboardSubtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" leftIcon={<Filter size={14} />}>Filter State</Button>
-          <Button variant="primary" size="sm" leftIcon={<Zap size={14} />}>Run Diagnostics</Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20" leftIcon={<Filter size={14} />}>
+            {secondaryActionLabel}
+          </Button>
+          <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30" leftIcon={<Zap size={14} />}>
+            {primaryActionLabel}
+          </Button>
         </div>
       </div>
 
-      {/* Metric cards */}
+      {/* Role-Specific Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <MetricCard
-          label="Total Facilities"
-          value={metrics.totalFacilities.toLocaleString()}
+          label={role === 'HOSPITAL_ADMIN' || role === 'FACILITY_STAFF' ? "Assigned Wards" : "Total Facilities"}
+          value={role === 'HOSPITAL_ADMIN' ? "18 Wards" : role === 'FACILITY_STAFF' ? "Counter #2" : metrics.totalFacilities.toLocaleString()}
           icon={<Building2 size={18} className="text-blue-600" />}
           iconBg="bg-blue-50"
           trend={`+${metrics.facilitiesOnline - metrics.totalFacilities + 12} online`}
@@ -182,11 +231,11 @@ export default function DashboardPage() {
           subLabel="Batches <30d"
         />
         <MetricCard
-          label="Redistribution"
-          value={metrics.redistributionOpportunities}
+          label={role === 'FACILITY_STAFF' ? "Doses Dispensed" : "Redistribution"}
+          value={role === 'FACILITY_STAFF' ? "340 Today" : metrics.redistributionOpportunities}
           icon={<ArrowLeftRight size={18} className="text-blue-600" />}
           iconBg="bg-blue-50"
-          subLabel="Ready to dispatch"
+          subLabel={role === 'FACILITY_STAFF' ? "All logged" : "Ready to dispatch"}
         />
         <MetricCard
           label="Equipment Issues"
@@ -197,28 +246,39 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* AI Command Intel banner */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-600 rounded-xl p-4 lg:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      {/* Role-Specific Intelligent Action Banner */}
+      <div className="bg-gradient-to-r from-blue-700 to-blue-600 rounded-xl p-4 lg:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 text-white shadow-lg shadow-blue-700/20">
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-            <Bot size={20} className="text-teal-300" />
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+            <Bot size={22} className="text-teal-300" />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[11px] font-bold tracking-widest text-blue-200 uppercase">NIRAMAYA AI COMMAND INTEL</span>
+              <span className="text-[11px] font-bold tracking-widest text-blue-200 uppercase">
+                {role === 'SUPER_ADMIN' ? 'NIRAMAYA NATIONAL AI SYNTHESIS' :
+                 role === 'STATE_ADMIN' ? 'STATEWIDE PREDICTIVE LOGISTICS' :
+                 role === 'DISTRICT_ADMIN' ? 'DISTRICT BUFFER RESTOCK RECOMMENDATION' :
+                 role === 'HOSPITAL_ADMIN' ? 'HOSPITAL CRITICAL OXYGEN & BATCH ALERT' :
+                 'STAFF DISPENSATION INTELLIGENCE'}
+              </span>
               {mockAISynthesis.confidence && <ConfidenceBadge confidence={mockAISynthesis.confidence} />}
             </div>
+            <p className="text-xs text-blue-100/90 font-medium">
+              {role === 'SUPER_ADMIN' && "Critical oxygen supply depletion projected in Sector 4 district hospitals within 36 hours. Automated inter-state protocol from Central Warehouse B is pre-calculated."}
+              {role === 'STATE_ADMIN' && "Maharashtra state reserve has 85 excess Medical Oxygen Cylinders at Pune NRC ready for urgent transfer to KEM Mumbai."}
+              {role === 'DISTRICT_ADMIN' && "Pune District Hospital Paracetamol stock at 120 units (below minimum threshold 300). Restock scheduled from Central Depot."}
+              {role === 'HOSPITAL_ADMIN' && "18 vials of Insulin Glargine expiring in 20 days. Auto-transfer initiated to prevent expired drug loss."}
+              {role === 'FACILITY_STAFF' && "Daily stock check completed: 4 Oxygen Cylinders remaining in Emergency Ward. Please flag if demand rises."}
+              {role === 'CITIZEN' && "100% verified medicine stocks available at nearby KEM Hospital and Sion Hospital."}
+            </p>
           </div>
         </div>
-        <p className="flex-1 text-sm text-blue-100 leading-relaxed">
-          Critical oxygen supply depletion projected in Sector 4 district hospitals within 36 hours due to surge in respiratory admissions. Automated redistribution protocol from Central Warehouse B is pre-calculated and optimized.
-        </p>
-        <div className="flex gap-2 flex-shrink-0">
+        <div className="flex gap-2 flex-shrink-0 ml-auto">
           <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-            Review Plan
+            Review Action
           </Button>
-          <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-            Authorize Transfer
+          <Button variant="outline" size="sm" className="bg-white text-blue-700 hover:bg-blue-50 font-bold border-transparent shadow">
+            Authorize
           </Button>
         </div>
       </div>
@@ -229,8 +289,10 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">Stock Risk Trend</h2>
-              <p className="text-xs text-gray-400">30-day projection across critical pharmaceutical supplies</p>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {role === 'HOSPITAL_ADMIN' || role === 'FACILITY_STAFF' ? "Hospital Drug Consumption & Forecast" : "Stock Risk Trend"}
+              </h2>
+              <p className="text-xs text-gray-400">30-day projection across critical medical items</p>
             </div>
             <div className="flex gap-1">
               {(['7D', '30D', '90D'] as const).map(p => (
@@ -354,7 +416,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-sm font-semibold text-gray-900">Operational Timeline</h2>
-              <p className="text-xs text-gray-400">Real-time national supply chain audit log</p>
+              <p className="text-xs text-gray-400">Real-time supply chain audit log</p>
             </div>
             <button className="text-[11px] text-blue-600 font-medium hover:underline">View All Logs</button>
           </div>

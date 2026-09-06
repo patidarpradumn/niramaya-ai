@@ -46,9 +46,29 @@ class MessageResponse(BaseModel):
 # User Schemas
 class UserBase(BaseModel):
     """Base user schema."""
+    model_config = ConfigDict(extra="ignore")
     email: EmailStr
     full_name: str
     role: UserRole = UserRole.CITIZEN
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_role_value(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_clean = v.strip().lower()
+            if v_clean in ("admin", "super_admin"):
+                return UserRole.SUPER_ADMIN
+            elif v_clean == "state_admin":
+                return UserRole.STATE_ADMIN
+            elif v_clean == "district_admin":
+                return UserRole.DISTRICT_ADMIN
+            elif v_clean in ("hospital_admin", "facility_manager", "hospital"):
+                return UserRole.HOSPITAL_ADMIN
+            elif v_clean in ("facility_staff", "staff"):
+                return UserRole.FACILITY_STAFF
+            elif v_clean in ("citizen", "viewer"):
+                return UserRole.CITIZEN
+        return v
 
 
 class UserCreate(UserBase):
@@ -62,9 +82,11 @@ class UserCreate(UserBase):
 
 class UserRegister(UserBase):
     """Admin/Dev user registration request."""
+    firebase_uid: Optional[str] = None
     facility_id: Optional[int] = None
     state_id: Optional[int] = None
     district_id: Optional[int] = None
+
 
 
 class UserResponse(UserBase):
