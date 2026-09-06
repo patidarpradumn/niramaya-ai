@@ -18,9 +18,9 @@ function ExpiryGroup({ label, items, color }: { label: string; items: InventoryI
   if (items.length === 0) return null;
   return (
     <div className="mb-4">
-      <div className={`px-3 py-1.5 rounded-t-lg text-xs font-bold uppercase tracking-wider ${color}`}>{label} ({items.length})</div>
-      <div className="border border-gray-200 rounded-b-lg overflow-hidden">
-        <table className="w-full">
+      <div className={`px-3 py-1.5 rounded-t-xl text-xs font-bold uppercase tracking-wider ${color}`}>{label} ({items.length})</div>
+      <div className="border border-gray-200 rounded-b-xl overflow-x-auto">
+        <table className="w-full min-w-[650px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               {['Resource', 'Facility', 'Batch', 'Expiry Date', 'Days', 'Qty', 'Status', 'Action'].map(h => (
@@ -46,7 +46,7 @@ function ExpiryGroup({ label, items, color }: { label: string; items: InventoryI
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_COLORS[item.status]}`}>{item.status}</span>
                 </td>
                 <td className="px-3 py-2.5">
-                  <button className="text-[11px] text-blue-600 font-medium hover:underline">Review</button>
+                  <button className="text-[11px] text-blue-600 font-medium hover:underline cursor-pointer">Review</button>
                 </td>
               </tr>
             ))}
@@ -88,11 +88,11 @@ export default function InventoryPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
-        <button onClick={() => setTab('inventory')} className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${tab === 'inventory' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setTab('inventory')} className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${tab === 'inventory' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
           <Package size={14} /> Inventory
         </button>
-        <button onClick={() => setTab('expiry')} className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${tab === 'expiry' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+        <button onClick={() => setTab('expiry')} className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${tab === 'expiry' ? 'bg-blue-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
           <Calendar size={14} /> Expiry Intelligence
         </button>
       </div>
@@ -100,7 +100,7 @@ export default function InventoryPage() {
       {tab === 'inventory' ? (
         <Card padding="none">
           {/* Search & Filters */}
-          <div className="px-4 py-3 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+          <div className="px-4 py-3 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-sm">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -108,15 +108,15 @@ export default function InventoryPage() {
                 placeholder="Search resources or facilities..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { value: filterRisk, options: ['All', 'Low', 'Medium', 'High', 'Critical'], onChange: setFilterRisk, label: 'Risk' },
                 { value: filterStatus, options: ['All', 'Healthy', 'Moderate', 'Elevated Risk', 'Critical'], onChange: setFilterStatus, label: 'Status' },
               ].map(f => (
-                <select key={f.label} value={f.value} onChange={e => f.onChange(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select key={f.label} value={f.value} onChange={e => f.onChange(e.target.value)} className="border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                   {f.options.map(o => <option key={o}>{o === 'All' ? `All ${f.label}` : o}</option>)}
                 </select>
               ))}
@@ -124,7 +124,7 @@ export default function InventoryPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[680px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   {['Resource', 'Facility', 'Stock / Requirement', 'Health', 'Expiry Date', 'Days', 'Batch', 'Status'].map(h => (

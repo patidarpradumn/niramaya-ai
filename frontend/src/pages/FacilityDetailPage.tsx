@@ -62,7 +62,7 @@ export default function FacilityDetailPage() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
               <Button variant="outline" size="sm" leftIcon={<Download size={14} />}>Export</Button>
               <Button variant="primary" size="sm" leftIcon={<ClipboardList size={14} />}>Create Review Task</Button>
             </div>

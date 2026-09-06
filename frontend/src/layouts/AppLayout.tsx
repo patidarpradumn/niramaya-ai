@@ -11,7 +11,7 @@ interface AppLayoutProps {
 export function AppLayout({ isCitizen = false }: AppLayoutProps) {
   return (
     <ToastProvider>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
         {/* Desktop Sidebar — hidden on mobile */}
         <div className="hidden lg:flex">
           <Sidebar isCitizen={isCitizen} />
@@ -22,8 +22,8 @@ export function AppLayout({ isCitizen = false }: AppLayoutProps) {
           <Topbar isCitizen={isCitizen} />
 
           {/* Page content */}
-          <main className="flex-1 overflow-y-auto pb-20 lg:pb-6">
-            <div className="p-4 lg:p-6 max-w-screen-2xl mx-auto">
+          <main className="flex-1 overflow-y-auto pb-20 lg:pb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
               <Outlet />
             </div>
           </main>

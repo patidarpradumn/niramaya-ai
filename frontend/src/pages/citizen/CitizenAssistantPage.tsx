@@ -139,7 +139,7 @@ export default function CitizenAssistantPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6.5rem)] max-w-5xl mx-auto space-y-3 pb-2">
+    <div className="flex flex-col h-[calc(100dvh-8.5rem)] sm:h-[calc(100vh-6.5rem)] max-w-5xl mx-auto space-y-3 pb-2">
       {/* 1. TOP HEADER */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 rounded-2xl p-4 text-white shadow-md flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">

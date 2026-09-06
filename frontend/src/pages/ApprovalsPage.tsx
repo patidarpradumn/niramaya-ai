@@ -86,26 +86,26 @@ export default function ApprovalsPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {pendingUsers.map((user) => (
-              <div key={user.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg">
+              <div key={user.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
                     {user.name.charAt(0)}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{user.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
-                      <span>{user.email}</span>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.name}</h3>
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-gray-500 mt-0.5">
+                      <span className="truncate">{user.email}</span>
                       <span>•</span>
                       <span className="font-medium text-blue-600">{user.role.replace('_', ' ')}</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end sm:self-center w-full sm:w-auto justify-end">
                   <button
                     onClick={() => handleReject(user.id)}
                     disabled={actionLoading === user.id}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
                     title="Reject Request"
                   >
                     <X size={20} />
@@ -113,7 +113,7 @@ export default function ApprovalsPage() {
                   <button
                     onClick={() => handleApprove(user.id)}
                     disabled={actionLoading === user.id}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {actionLoading === user.id ? (
                       <Loader2 size={16} className="animate-spin" />

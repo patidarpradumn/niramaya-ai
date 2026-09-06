@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Bell, X, Circle } from 'lucide-react';
+import { Search, Bell, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const ROUTE_TITLES: Record<string, string> = {
@@ -68,16 +68,6 @@ export function Topbar({ isCitizen = false }: TopbarProps) {
           </button>
         )}
 
-        {/* AI Status — only for government users */}
-        {!isCitizen && (
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-teal-50 border border-teal-200 rounded-lg">
-            <div className="relative">
-              <Circle size={7} fill="#14B8A6" className="text-teal-500" />
-              <div className="absolute inset-0 rounded-full bg-teal-400 animate-ping opacity-50" />
-            </div>
-            <span className="text-xs text-teal-700 font-medium">AI Active</span>
-          </div>
-        )}
 
         {/* Notifications */}
         <button

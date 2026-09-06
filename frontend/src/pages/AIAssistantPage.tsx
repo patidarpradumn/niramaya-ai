@@ -45,12 +45,12 @@ function getAIResponse(query: string): AIMessage {
 function MessageBubble({ msg }: { msg: AIMessage }) {
   const isUser = msg.role === 'user';
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-2.5 sm:gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isUser ? 'bg-blue-600' : 'bg-teal-600'}`}>
         {isUser ? <User size={14} className="text-white" /> : <Bot size={14} className="text-white" />}
       </div>
-      <div className={`max-w-[80%] space-y-2 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-        <div className={`rounded-2xl px-4 py-3 text-sm ${isUser ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'}`}>
+      <div className={`max-w-[90%] sm:max-w-[78%] space-y-2 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+        <div className={`rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm leading-relaxed ${isUser ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'}`}>
           {msg.content}
         </div>
         {msg.structured && (
@@ -59,7 +59,7 @@ function MessageBubble({ msg }: { msg: AIMessage }) {
               <p className="text-xs font-semibold text-teal-800 mb-2">{msg.structured.summary}</p>
             )}
             {msg.structured.metrics && (
-              <div className="grid grid-cols-2 gap-2 mb-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                 {msg.structured.metrics.map(m => (
                   <div key={m.label} className="bg-white rounded-lg p-2 border border-teal-100">
                     <p className="text-[10px] text-teal-600 font-medium">{m.label}</p>
@@ -124,24 +124,24 @@ export default function AIAssistantPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] max-h-[800px]">
+    <div className="flex flex-col h-[calc(100dvh-9rem)] sm:h-[calc(100vh-7.5rem)] max-h-[850px]">
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-[#0D1526] to-[#1A2540] rounded-xl overflow-hidden mb-4 flex-shrink-0">
+      <div className="relative bg-gradient-to-r from-[#0D1526] to-[#1A2540] rounded-2xl overflow-hidden mb-3.5 flex-shrink-0">
         <IntelligenceLayerBg />
-        <div className="relative z-10 px-5 py-4 flex items-center justify-between">
+        <div className="relative z-10 px-4 py-3 sm:px-5 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
               <Bot size={20} className="text-teal-300" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-white font-bold text-base">NIRAMAYA AI</h1>
+                <h1 className="text-white font-bold text-sm sm:text-base">NIRAMAYA AI</h1>
                 <div className="flex items-center gap-1 bg-teal-500/20 border border-teal-400/30 rounded-full px-2 py-0.5">
                   <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse" />
                   <span className="text-[10px] text-teal-300 font-semibold">Active</span>
                 </div>
               </div>
-              <p className="text-blue-300/70 text-xs">Healthcare Intelligence Assistant</p>
+              <p className="text-blue-300/70 text-[11px] sm:text-xs">Healthcare Intelligence Assistant</p>
             </div>
           </div>
           <div className="hidden sm:flex flex-col items-end gap-1">
@@ -149,21 +149,21 @@ export default function AIAssistantPage() {
               <Activity size={12} />
               <span>1,248 facilities monitored</span>
             </div>
-            <span className="text-[10px] text-blue-400/50">AI Decision Support Only — Not Medical Advice</span>
+            <span className="text-[10px] text-blue-400/50">AI Decision Support Only</span>
           </div>
         </div>
       </div>
 
       {/* Suggested prompts — shown when only 1 message (welcome) */}
       {messages.length <= 1 && (
-        <div className="mb-4 flex-shrink-0">
+        <div className="mb-3 flex-shrink-0">
           <p className="text-xs text-gray-500 mb-2 font-medium">Suggested queries:</p>
-          <div className="grid sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {SUGGESTED_PROMPTS.map(p => (
               <button
                 key={p}
                 onClick={() => sendMessage(p)}
-                className="text-left text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                className="text-left text-xs px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 {p}
               </button>
@@ -173,10 +173,10 @@ export default function AIAssistantPage() {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
         {messages.map(msg => <MessageBubble key={msg.id} msg={msg} />)}
         {isThinking && (
-          <div className="flex gap-3">
+          <div className="flex gap-2.5 sm:gap-3">
             <div className="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center">
               <Bot size={14} className="text-white" />
             </div>
@@ -192,8 +192,8 @@ export default function AIAssistantPage() {
       </div>
 
       {/* Disclaimer */}
-      <div className="mt-3 mb-2 text-center flex-shrink-0">
-        <p className="text-[11px] text-gray-400">NIRAMAYA AI provides decision support for healthcare administrators only. Not for medical advice, diagnosis, or treatment. For emergencies, call 112.</p>
+      <div className="mt-2 mb-2 text-center flex-shrink-0">
+        <p className="text-[10px] sm:text-[11px] text-gray-400">NIRAMAYA AI provides decision support for healthcare administrators only. For emergencies, call 112.</p>
       </div>
 
       {/* Input */}
@@ -202,16 +202,16 @@ export default function AIAssistantPage() {
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder="Ask about facilities, resources, shortages, or redistribution opportunities..."
-          className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          placeholder="Ask about facilities, resources, shortages, or redistribution..."
+          className="flex-1 border border-gray-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           disabled={isThinking}
         />
         <button
           type="submit"
           disabled={!input.trim() || isThinking}
-          className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 sm:py-3 bg-blue-600 text-white text-xs sm:text-sm font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
-          <Send size={16} />
+          <Send size={15} />
         </button>
       </form>
     </div>

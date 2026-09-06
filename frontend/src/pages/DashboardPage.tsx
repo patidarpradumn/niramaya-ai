@@ -188,7 +188,7 @@ export default function DashboardPage() {
             <p className="text-xs text-blue-200/70 mt-0.5">{dashboardSubtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto w-full sm:w-auto justify-start sm:justify-end">
           <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20" leftIcon={<Filter size={14} />}>
             {secondaryActionLabel}
           </Button>
