@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Eye, EyeOff, Loader2, Lock, Mail, Fingerprint } from 'lucide-react';
+import { Shield, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getErrorMessage } from '../utils';
 
@@ -27,7 +27,6 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isBiometricActive, setIsBiometricActive] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -51,22 +50,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleBiometricAuth = async () => {
-    setIsBiometricActive(true);
-    setError('');
-    // Simulate biometric scan
-    setTimeout(async () => {
-      try {
-        await login(email, password);
-        const target = selectedRole === 'CITIZEN' ? '/citizen' : '/dashboard';
-        navigate(target);
-      } catch (err) {
-        setError('Biometric authentication failed. Please enter your password.');
-        setIsBiometricActive(false);
-      }
-    }, 1200);
   };
 
   return (
@@ -203,13 +186,13 @@ export default function Login() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || isBiometricActive}
+              disabled={isLoading}
               className="w-full mt-2 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99]"
             >
-              {isLoading || isBiometricActive ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{isBiometricActive ? 'Authenticating Biometrics...' : 'Signing in...'}</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
@@ -219,22 +202,6 @@ export default function Login() {
               )}
             </button>
           </form>
-
-          {/* Biometrics Option */}
-          <div className="mt-5 text-center pt-2">
-            <p className="text-[11px] font-medium text-slate-400 mb-2.5">
-              Or sign in instantly with biometrics
-            </p>
-            <button
-              type="button"
-              onClick={handleBiometricAuth}
-              disabled={isBiometricActive || isLoading}
-              title="Biometric Fingerprint Authentication"
-              className="mx-auto w-11 h-11 rounded-2xl bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-600 flex items-center justify-center transition-all shadow-sm border border-blue-100/80 cursor-pointer group"
-            >
-              <Fingerprint className={`w-5 h-5 transition-transform group-hover:scale-110 ${isBiometricActive ? 'animate-pulse text-blue-700' : ''}`} />
-            </button>
-          </div>
           
           {/* Sign Up Link */}
           <div className="mt-6 text-center border-t border-slate-200 pt-4">
