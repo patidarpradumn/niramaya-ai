@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Building2, AlertTriangle, TrendingDown, Calendar, ArrowLeftRight, Wrench,
   Filter, Zap, Clock, Bot, CheckCircle2, Info, AlertCircle
@@ -106,7 +106,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<'7D' | '30D' | '90D'>('7D');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(false);
   const [metrics] = useState(mockDashboardMetrics);
   const criticalAlerts = mockAlerts.filter(a => a.status === 'Active').slice(0, 4);
   const chartData = PERIOD_MAP[period];
@@ -116,11 +116,6 @@ export default function DashboardPage() {
     { name: 'Near Expiry', value: mockRiskDistribution.nearExpiry },
     { name: 'Logistics Delay', value: mockRiskDistribution.logisticsDelay },
   ];
-
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(t);
-  }, []);
 
   if (isLoading) {
     return (

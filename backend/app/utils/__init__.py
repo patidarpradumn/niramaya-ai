@@ -94,46 +94,68 @@ def normalize_role(role) -> UserRoleEnum:
         return UserRoleEnum.CITIZEN
 
 
+import time
 from firebase_admin import auth as firebase_auth
-from firebase_admin.exceptions import FirebaseError
+
+_TOKEN_CACHE: dict = {}
 
 def decode_token(token: str) -> TokenData:
-    """Decode and validate a Firebase JWT token claims or fallback to local JWT."""
-    # 1. Try Firebase Admin ID token verification first
-    try:
-        payload = firebase_auth.verify_id_token(token, check_revoked=False)
-        email = payload.get("email")
-        firebase_uid = payload.get("uid") or payload.get("user_id") or payload.get("sub")
-        if email and firebase_uid:
-            return TokenData(firebase_uid=firebase_uid, email=email, role=UserRoleEnum.CITIZEN, token_type="access")
-    except Exception:
-        pass
+    """Decode and validate a Firebase JWT token claims or fallback to local JWT with high-speed caching."""
+    now = time.time()
 
-    # 1b. Inspect Firebase Google Token Claims (for dev / certificate fallback)
+    # 0. Check in-memory cache
+    if token in _TOKEN_CACHE:
+        cached_data, expire_at = _TOKEN_CACHE[token]
+        if now < expire_at:
+            return cached_data
+        else:
+            _TOKEN_CACHE.pop(token, None)
+
+    # 1. Inspect unverified claims to distinguish Firebase token vs Local JWT instantly without network delay
+    is_firebase_token = False
+    unverified = {}
     try:
         unverified = jwt.get_unverified_claims(token)
         iss = unverified.get("iss", "")
         if "securetoken.google.com" in iss:
-            email = unverified.get("email")
-            firebase_uid = unverified.get("user_id") or unverified.get("sub") or unverified.get("uid")
-            if email and firebase_uid:
-                return TokenData(firebase_uid=firebase_uid, email=email, role=UserRoleEnum.CITIZEN, token_type="access")
+            is_firebase_token = True
     except Exception:
         pass
 
-    # 2. Fallback to local JWT token decoding (for local development/tests)
+    if is_firebase_token:
+        # Firebase token flow
+        email = unverified.get("email")
+        firebase_uid = unverified.get("user_id") or unverified.get("sub") or unverified.get("uid")
+        exp = unverified.get("exp", now + 300)
+
+        try:
+            payload = firebase_auth.verify_id_token(token, check_revoked=False)
+            email = payload.get("email") or email
+            firebase_uid = payload.get("uid") or payload.get("user_id") or payload.get("sub") or firebase_uid
+        except Exception:
+            pass
+
+        if email and firebase_uid:
+            res = TokenData(firebase_uid=firebase_uid, email=email, role=UserRoleEnum.CITIZEN, token_type="access")
+            _TOKEN_CACHE[token] = (res, min(now + 300, float(exp)))
+            return res
+
+    # 2. Local JWT token decoding (instant 0ms decode)
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email = payload.get("email") or payload.get("sub")
         role = payload.get("role", "citizen")
         firebase_uid = payload.get("firebase_uid") or payload.get("uid")
+        exp = payload.get("exp", now + 300)
         if not email:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token payload: no email found",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        return TokenData(firebase_uid=firebase_uid, email=email, role=normalize_role(role), token_type="access")
+        res = TokenData(firebase_uid=firebase_uid, email=email, role=normalize_role(role), token_type="access")
+        _TOKEN_CACHE[token] = (res, min(now + 300, float(exp)))
+        return res
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import type { User, UserRole, AuthState } from '../types';
@@ -17,6 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshPromiseRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -44,21 +45,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = async (): Promise<void> => {
-    try {
-      const userData = await authAPI.getMe();
-      const formattedUser: User = {
-        ...userData,
-        id: String(userData.id),
-        name: userData.name || (userData as any).full_name || userData.email.split('@')[0],
-        role: String((userData as any).role || 'CITIZEN').toUpperCase() as UserRole,
-      };
-      setUser(formattedUser);
-    } catch (err) {
-      localStorage.removeItem('access_token');
-      setUser(null);
-      setToken(null);
-      throw err;
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
     }
+
+    const promise = (async () => {
+      try {
+        const userData = await authAPI.getMe();
+        const formattedUser: User = {
+          ...userData,
+          id: String(userData.id),
+          name: userData.name || (userData as any).full_name || userData.email.split('@')[0],
+          role: String((userData as any).role || 'CITIZEN').toUpperCase() as UserRole,
+        };
+        setUser(formattedUser);
+      } catch (err) {
+        localStorage.removeItem('access_token');
+        setUser(null);
+        setToken(null);
+        throw err;
+      } finally {
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    refreshPromiseRef.current = promise;
+    return promise;
   };
 
   const login = async (email: string, password: string) => {
