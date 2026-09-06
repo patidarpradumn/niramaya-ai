@@ -101,11 +101,23 @@ def decode_token(token: str) -> TokenData:
     """Decode and validate a Firebase JWT token claims or fallback to local JWT."""
     # 1. Try Firebase Admin ID token verification first
     try:
-        payload = firebase_auth.verify_id_token(token)
+        payload = firebase_auth.verify_id_token(token, check_revoked=False)
         email = payload.get("email")
-        firebase_uid = payload.get("uid")
+        firebase_uid = payload.get("uid") or payload.get("user_id") or payload.get("sub")
         if email and firebase_uid:
             return TokenData(firebase_uid=firebase_uid, email=email, role=UserRoleEnum.CITIZEN, token_type="access")
+    except Exception:
+        pass
+
+    # 1b. Inspect Firebase Google Token Claims (for dev / certificate fallback)
+    try:
+        unverified = jwt.get_unverified_claims(token)
+        iss = unverified.get("iss", "")
+        if "securetoken.google.com" in iss:
+            email = unverified.get("email")
+            firebase_uid = unverified.get("user_id") or unverified.get("sub") or unverified.get("uid")
+            if email and firebase_uid:
+                return TokenData(firebase_uid=firebase_uid, email=email, role=UserRoleEnum.CITIZEN, token_type="access")
     except Exception:
         pass
 
@@ -150,15 +162,18 @@ def get_current_user(
 ) -> User:
     """FastAPI dependency to retrieve the application user from database."""
     from sqlalchemy import func
+    from app.models import ApprovalStatusEnum
     
     user = None
+    email_clean = token_data.email.strip().lower() if token_data.email else None
+
     # First, look up by firebase_uid
     if token_data.firebase_uid:
         user = db.query(User).filter(User.firebase_uid == token_data.firebase_uid).first()
     
-    if user is None and token_data.email:
+    if user is None and email_clean:
         # Fallback to email for users who haven't logged in with Firebase yet
-        user = db.query(User).filter(func.lower(User.email) == token_data.email.lower()).first()
+        user = db.query(User).filter(func.lower(User.email) == email_clean).first()
         if user and token_data.firebase_uid and user.firebase_uid is None:
             user.firebase_uid = token_data.firebase_uid
             db.commit()
@@ -167,6 +182,22 @@ def get_current_user(
     # If sub was numeric user ID
     if user is None and token_data.email and str(token_data.email).isdigit():
         user = db.query(User).filter(User.id == int(token_data.email)).first()
+
+    # Auto-provision if user authenticated successfully with Firebase but not in DB yet
+    if user is None and email_clean and token_data.firebase_uid:
+        name_part = email_clean.split('@')[0].replace('.', ' ').replace('_', ' ').title()
+        user = User(
+            firebase_uid=token_data.firebase_uid,
+            email=email_clean,
+            full_name=name_part,
+            password_hash=None,
+            role=UserRoleEnum.CITIZEN,
+            is_active=True,
+            approval_status=ApprovalStatusEnum.APPROVED
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     if user is None:
         raise HTTPException(

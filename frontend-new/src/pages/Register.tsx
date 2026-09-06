@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getErrorMessage } from '../utils';
 
 export default function Register() {
+  const [selectedRole, setSelectedRole] = useState<string>('citizen');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,6 +16,10 @@ export default function Register() {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const handleRoleSelect = (roleId: string) => {
+    setSelectedRole(roleId);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +38,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await register(email, password, fullName);
+      await register(email, password, fullName, selectedRole);
       navigate('/dashboard');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -67,7 +72,7 @@ export default function Register() {
         <div className="bg-slate-100/95 backdrop-blur-md rounded-3xl shadow-2xl p-7 border border-white/20 animate-fade-in">
           <div className="text-center mb-5">
             <h2 className="text-lg font-bold text-slate-800">Create Account</h2>
-            <p className="text-xs text-slate-500 mt-1">Register for a new citizen access account</p>
+            <p className="text-xs text-slate-500 mt-1">Select your role and create your account</p>
           </div>
 
           {error && (
@@ -78,6 +83,35 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* SELECT ACCESS ROLE */}
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                SELECT ACCOUNT ROLE
+              </label>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[
+                  { id: 'super_admin', label: 'Super Admin' },
+                  { id: 'state_admin', label: 'State Admin' },
+                  { id: 'district_admin', label: 'District Admin' },
+                  { id: 'hospital_admin', label: 'Hospital' },
+                  { id: 'facility_staff', label: 'Staff' },
+                  { id: 'citizen', label: 'Citizen' },
+                ].map((role) => (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => handleRoleSelect(role.id)}
+                    className={`py-2 px-2 text-[10px] font-semibold rounded-xl transition-all cursor-pointer border ${
+                      selectedRole === role.id
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20'
+                        : 'bg-slate-200/70 hover:bg-slate-300/80 text-slate-700 border-transparent'
+                    }`}
+                  >
+                    {role.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* FULL NAME */}
             <div>
               <label htmlFor="register-name" className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">

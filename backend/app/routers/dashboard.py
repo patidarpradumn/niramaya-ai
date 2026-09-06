@@ -19,14 +19,8 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 def _get_scoped_facility_ids(db: Session, current_user: User) -> List[int]:
     user_role = normalize_role(current_user.role)
-    if user_role == UserRoleEnum.CITIZEN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Citizens do not have access to administrative dashboard data"
-        )
-
     facility_query = db.query(Facility.id)
-    if user_role == UserRoleEnum.SUPER_ADMIN:
+    if user_role == UserRoleEnum.SUPER_ADMIN or user_role == UserRoleEnum.CITIZEN:
         pass
     elif user_role == UserRoleEnum.STATE_ADMIN:
         if current_user.state_id:

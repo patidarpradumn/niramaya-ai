@@ -72,11 +72,17 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    name: Optional[str] = None
     facility_id: Optional[int] = None
     state_id: Optional[int] = None
     district_id: Optional[int] = None
     is_active: bool = True
-    created_at: datetime
+    approval_status: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+    def model_post_init(self, __context: Any) -> None:
+        if not self.name and self.full_name:
+            self.name = self.full_name
 
 
 class UserUpdate(BaseModel):

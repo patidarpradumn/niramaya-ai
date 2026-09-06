@@ -1,5 +1,37 @@
 """API routers package."""
 
-from app.routers import auth, users, facilities, inventory, alerts, predictions, ai, dashboard, recommendations, equipment, maintenance, audit_logs
+from app.routers import (
+    users,
+    facilities,
+    items,
+    inventory,
+    stock_movements,
+    consumption,
+    alerts,
+    predictions,
+    ai,
+    dashboard,
+    recommendations,
+    equipment,
+    maintenance,
+    audit_logs,
+    public,
+)
 
-__all__ = ["auth", "users", "facilities", "inventory", "alerts", "predictions", "ai", "dashboard", "recommendations", "equipment", "maintenance", "audit_logs"]
+__all__ = [
+    "users",
+    "facilities",
+    "items",
+    "inventory",
+    "stock_movements",
+    "consumption",
+    "alerts",
+    "predictions",
+    "ai",
+    "dashboard",
+    "recommendations",
+    "equipment",
+    "maintenance",
+    "audit_logs",
+    "public",
+]

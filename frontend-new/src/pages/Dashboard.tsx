@@ -158,6 +158,31 @@ export default function Dashboard() {
     MinThreshold: risk.min_threshold,
   }));
 
+  // Role-specific dashboard configuration
+  const roleNorm = (user?.role || '').toLowerCase();
+  let dashboardTitle = 'Government Operations Dashboard';
+  let dashboardSubtitle = 'Real-time supply chain monitoring, risk analysis & decision support';
+
+  if (roleNorm === 'super_admin') {
+    dashboardTitle = 'National Health Command Center (Super Admin)';
+    dashboardSubtitle = 'Nationwide healthcare inventory intelligence, cross-facility supply balancing & risk alerts';
+  } else if (roleNorm === 'state_admin') {
+    dashboardTitle = 'State Healthcare Operations Command';
+    dashboardSubtitle = 'Statewide facility oversight, district-level medicine reserves & emergency response';
+  } else if (roleNorm === 'district_admin') {
+    dashboardTitle = 'District Health Administration Dashboard';
+    dashboardSubtitle = 'District healthcare facilities, local drug distribution & stockout management';
+  } else if (roleNorm === 'hospital_admin') {
+    dashboardTitle = 'Hospital Facility Command Center';
+    dashboardSubtitle = 'Hospital inventory levels, batch expiry tracking, equipment downtime & clinical supply';
+  } else if (roleNorm === 'facility_staff') {
+    dashboardTitle = 'Facility Staff Operations Dashboard';
+    dashboardSubtitle = 'Daily medicine consumption logging, low-stock warnings & local medical equipment';
+  } else if (roleNorm === 'citizen') {
+    dashboardTitle = 'Public Health & Medicine Availability Portal';
+    dashboardSubtitle = 'Find nearby healthcare facilities, verified medicine stocks & public health intelligence';
+  }
+
   // User Jurisdiction Scope Label
   const scopeLabel = user?.role
     ? formatRole(user.role) +
@@ -172,9 +197,9 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 rounded-2xl shadow-xl">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">Government Operations Dashboard</h1>
+            <h1 className="text-2xl font-bold">{dashboardTitle}</h1>
           </div>
-          <p className="text-blue-200/70 text-sm mt-1">Real-time supply chain monitoring, risk analysis & decision support</p>
+          <p className="text-blue-200/70 text-sm mt-1">{dashboardSubtitle}</p>
         </div>
         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-xs font-medium self-start sm:self-auto">
           <Layers className="w-4 h-4 text-primary-light" />

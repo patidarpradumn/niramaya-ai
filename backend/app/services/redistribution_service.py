@@ -214,10 +214,7 @@ class RedistributionService:
     ) -> Tuple[List[Recommendation], int]:
         """List recommendations with filtering, RBAC geographic bounds, and detailed metadata."""
         if current_user.role == UserRoleEnum.CITIZEN:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Citizens are not authorized to view recommendations."
-            )
+            return [], 0
 
         query = db.query(Recommendation)
 

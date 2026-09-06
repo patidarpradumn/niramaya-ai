@@ -28,12 +28,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, access: isStaff },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/facilities', label: 'Facilities', icon: Building2 },
   { path: '/inventory', label: 'Inventory', icon: Package, access: isStaff },
   { path: '/alerts', label: 'Alerts', icon: AlertTriangle, access: isStaff },
   { path: '/predictions', label: 'Predictions', icon: TrendingUp, access: isStaff },
   { path: '/recommendations', label: 'Recommendations', icon: ArrowLeftRight, access: isStaff },
-  { path: '/facilities', label: 'Facilities', icon: Building2, access: isStaff },
   { path: '/equipment', label: 'Equipment', icon: Wrench, access: isStaff },
   { path: '/ai-assistant', label: 'AI Assistant', icon: Bot },
   { path: '/audit-logs', label: 'Audit Logs', icon: ScrollText, access: canViewAuditLogs },

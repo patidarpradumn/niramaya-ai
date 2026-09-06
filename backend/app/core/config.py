@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Firebase Authentication
-    FIREBASE_PROJECT_ID: str = "niramaya-ai-dev"
+    FIREBASE_PROJECT_ID: str = "niramaya-ai-23db9"
     FIREBASE_CREDENTIALS_PATH: str = "./firebase-credentials.json"
 
 

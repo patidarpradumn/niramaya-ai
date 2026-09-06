@@ -46,7 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = async (): Promise<void> => {
     try {
       const userData = await authAPI.getMe();
-      setUser(userData);
+      const formattedUser: User = {
+        ...userData,
+        id: String(userData.id),
+        name: userData.name || (userData as any).full_name || userData.email.split('@')[0],
+        role: String((userData as any).role || 'CITIZEN').toUpperCase() as UserRole,
+      };
+      setUser(formattedUser);
     } catch (err) {
       localStorage.removeItem('access_token');
       setUser(null);

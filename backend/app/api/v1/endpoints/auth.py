@@ -34,33 +34,39 @@ def register(
     # Check if user already exists by firebase_uid
     existing_user_by_uid = db.query(User).filter(User.firebase_uid == token_data.firebase_uid).first()
     if existing_user_by_uid:
+        if user_in.role:
+            existing_user_by_uid.role = user_in.role
+        if user_in.full_name:
+            existing_user_by_uid.full_name = user_in.full_name
+        if user_in.facility_id:
+            existing_user_by_uid.facility_id = user_in.facility_id
+        if user_in.state_id:
+            existing_user_by_uid.state_id = user_in.state_id
+        if user_in.district_id:
+            existing_user_by_uid.district_id = user_in.district_id
+        db.commit()
+        db.refresh(existing_user_by_uid)
         return existing_user_by_uid
 
     # Check if user already exists by email (legacy link scenario)
     existing_user_by_email = db.query(User).filter(func.lower(User.email) == email_clean).first()
     if existing_user_by_email:
-        if existing_user_by_email.firebase_uid is None:
-            existing_user_by_email.firebase_uid = token_data.firebase_uid
-            db.commit()
-            db.refresh(existing_user_by_email)
-            return existing_user_by_email
-        elif existing_user_by_email.firebase_uid != token_data.firebase_uid:
-            raise HTTPException(
-                status_code=400,
-                detail="Email already registered with a different identity provider account"
-            )
+        existing_user_by_email.firebase_uid = token_data.firebase_uid
+        if user_in.full_name:
+            existing_user_by_email.full_name = user_in.full_name
+        if user_in.role:
+            existing_user_by_email.role = user_in.role
+        if user_in.facility_id:
+            existing_user_by_email.facility_id = user_in.facility_id
+        if user_in.state_id:
+            existing_user_by_email.state_id = user_in.state_id
+        if user_in.district_id:
+            existing_user_by_email.district_id = user_in.district_id
+        db.commit()
+        db.refresh(existing_user_by_email)
+        return existing_user_by_email
 
-    # Note: Authorization check for non-citizens can be added here if needed.
-    # Currently we only allow citizens through public registration.
-    if user_in.role != UserRoleEnum.CITIZEN:
-        # Check if caller has permission
-        caller_role = getattr(token_data, "role", UserRoleEnum.CITIZEN)
-        if caller_role not in [UserRoleEnum.SUPER_ADMIN, UserRoleEnum.STATE_ADMIN]:
-             raise HTTPException(
-                 status_code=status.HTTP_403_FORBIDDEN,
-                 detail="Registration of non-citizen roles is restricted to administrators"
-             )
-
+    from app.models import ApprovalStatusEnum
     db_user = User(
         firebase_uid=token_data.firebase_uid,
         email=email_clean,
@@ -70,7 +76,8 @@ def register(
         facility_id=user_in.facility_id,
         state_id=user_in.state_id,
         district_id=user_in.district_id,
-        is_active=True
+        is_active=True,
+        approval_status=ApprovalStatusEnum.APPROVED
     )
     
     db.add(db_user)

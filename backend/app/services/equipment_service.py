@@ -144,7 +144,7 @@ class EquipmentService:
             else:
                 return ([], 0)
         elif role == UserRoleEnum.CITIZEN:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Citizens cannot view internal equipment records")
+            return ([], 0)
 
         if facility_id:
             query = query.filter(Equipment.facility_id == facility_id)

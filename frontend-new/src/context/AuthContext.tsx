@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string) => Promise<void>;
+  register: (email: string, password: string, fullName: string, role?: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -42,11 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = async (): Promise<void> => {
     try {
       const response = await authAPI.getMe();
       setUser(response.data);
-      return response.data;
     } catch (err) {
       localStorage.removeItem('access_token');
       setUser(null);
@@ -61,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refreshUser();
   };
 
-  const register = async (email: string, password: string, fullName: string) => {
+  const register = async (email: string, password: string, fullName: string, role: string = 'citizen') => {
     // 1. Create user in Firebase
     const { createUserWithEmailAndPassword } = await import('firebase/auth');
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -73,10 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authAPI.register({
         email,
         full_name: fullName,
-        role: 'citizen'
+        role: role.toLowerCase()
       });
     } catch (error) {
-      // If backend registration fails, we might want to cleanup the Firebase user or log it
       console.error("Backend registration failed:", error);
       throw error;
     }

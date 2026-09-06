@@ -15,8 +15,8 @@ const ROLES: RoleOption[] = [
   { id: 'super_admin', label: 'Super Admin', email: 'admin@mediguard.gov', roleName: 'Super Admin' },
   { id: 'state_admin', label: 'State Admin', email: 'state.mh@niramaya.gov.in', roleName: 'State Admin' },
   { id: 'district_admin', label: 'District Admin', email: 'district.pune@niramaya.gov.in', roleName: 'District Admin' },
-  { id: 'hospital', label: 'Hospital', email: 'manager@hospital.gov', roleName: 'Hospital Admin' },
-  { id: 'staff', label: 'Staff', email: 'staff@clinic.gov', roleName: 'Facility Staff' },
+  { id: 'hospital_admin', label: 'Hospital', email: 'manager@hospital.gov', roleName: 'Hospital Admin' },
+  { id: 'facility_staff', label: 'Staff', email: 'staff@clinic.gov', roleName: 'Facility Staff' },
   { id: 'citizen', label: 'Citizen', email: 'viewer@clinic.gov', roleName: 'Citizen' },
 ];
 
