@@ -23,7 +23,9 @@ class UserRoleEnum(str, enum.Enum):
 
     # Backward-compatibility aliases
     ADMIN = "super_admin"
+    FACILITY_ADMIN = "hospital_admin"
     FACILITY_MANAGER = "hospital_admin"
+    STAFF = "facility_staff"
     VIEWER = "citizen"
 
 

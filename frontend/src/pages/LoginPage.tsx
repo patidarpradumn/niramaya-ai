@@ -7,17 +7,16 @@ import { getErrorMessage } from '../utils';
 interface RoleOption {
   id: string;
   label: string;
-  email: string;
   roleName: string;
 }
 
 const ROLES: RoleOption[] = [
-  { id: 'SUPER_ADMIN', label: 'Super Admin', email: 'admin@mediguard.gov', roleName: 'Super Admin' },
-  { id: 'STATE_ADMIN', label: 'State Admin', email: 'state.mh@niramaya.gov.in', roleName: 'State Admin' },
-  { id: 'DISTRICT_ADMIN', label: 'District Admin', email: 'district.pune@niramaya.gov.in', roleName: 'District Admin' },
-  { id: 'HOSPITAL_ADMIN', label: 'Hospital', email: 'manager@hospital.gov', roleName: 'Hospital Admin' },
-  { id: 'FACILITY_STAFF', label: 'Staff', email: 'staff@clinic.gov', roleName: 'Facility Staff' },
-  { id: 'CITIZEN', label: 'Citizen', email: 'viewer@clinic.gov', roleName: 'Citizen' },
+  { id: 'SUPER_ADMIN', label: 'Super Admin', roleName: 'Super Admin' },
+  { id: 'STATE_ADMIN', label: 'State Admin', roleName: 'State Admin' },
+  { id: 'DISTRICT_ADMIN', label: 'District Admin', roleName: 'District Admin' },
+  { id: 'HOSPITAL_ADMIN', label: 'Hospital', roleName: 'Hospital Admin' },
+  { id: 'FACILITY_STAFF', label: 'Staff', roleName: 'Facility Staff' },
+  { id: 'CITIZEN', label: 'Citizen', roleName: 'Citizen' },
 ];
 
 export default function Login() {
@@ -25,7 +24,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isBiometricActive, setIsBiometricActive] = useState(false);
@@ -33,10 +32,8 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleRoleSelect = (role: RoleOption) => {
-    setSelectedRole(role.id);
-    setEmail(role.email);
-    setPassword('');
+  const handleRoleSelect = (roleId: string) => {
+    setSelectedRole(roleId);
     setError('');
   };
 
@@ -47,7 +44,8 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      const target = selectedRole === 'CITIZEN' ? '/citizen' : '/dashboard';
+      navigate(target);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -62,7 +60,8 @@ export default function Login() {
     setTimeout(async () => {
       try {
         await login(email, password);
-        navigate('/dashboard');
+        const target = selectedRole === 'CITIZEN' ? '/citizen' : '/dashboard';
+        navigate(target);
       } catch (err) {
         setError('Biometric authentication failed. Please enter your password.');
         setIsBiometricActive(false);
@@ -113,7 +112,7 @@ export default function Login() {
                     <button
                       key={role.id}
                       type="button"
-                      onClick={() => handleRoleSelect(role)}
+                      onClick={() => handleRoleSelect(role.id)}
                       className={`py-2 px-2 text-xs font-semibold rounded-xl transition-all cursor-pointer border ${
                         isSelected
                           ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20'
@@ -144,7 +143,7 @@ export default function Login() {
                   className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                   placeholder="name@gov.in or ID"
                   required
-                  autoComplete="username"
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -171,7 +170,7 @@ export default function Login() {
                   className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-10 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                   placeholder="••••••••••••"
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"

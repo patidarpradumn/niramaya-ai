@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Bot, User } from 'lucide-react';
+import { LayoutDashboard, Package, Bot, Bell } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,8 +10,8 @@ interface MobileNavProps {
 const govItems = [
   { to: '/dashboard', icon: <LayoutDashboard size={22} />, label: 'Home' },
   { to: '/inventory', icon: <Package size={22} />, label: 'Supply' },
+  { to: '/alerts', icon: <Bell size={22} />, label: 'Alerts' },
   { to: '/ai-assistant', icon: <Bot size={22} />, label: 'AI Intel' },
-  { to: '/citizen', icon: <User size={22} />, label: 'Portal' },
 ];
 
 const citizenItems = [

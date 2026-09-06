@@ -4,12 +4,15 @@ export type UserRole =
   | 'SUPER_ADMIN'
   | 'STATE_ADMIN'
   | 'DISTRICT_ADMIN'
+  | 'FACILITY_ADMIN'
   | 'HOSPITAL_ADMIN'
+  | 'STAFF'
   | 'FACILITY_STAFF'
   | 'CITIZEN';
 
 export interface User {
   id: string;
+  firebase_uid?: string;
   name: string;
   email: string;
   role: UserRole;
@@ -19,6 +22,9 @@ export interface User {
   district_id?: number | string;
   facility_id?: number | string;
   facilityId?: string;
+  status?: string;
+  is_active?: boolean;
+  approval_status?: string;
   avatar?: string;
 }
 
@@ -207,6 +213,44 @@ export interface StockRiskDataPoint {
   forecast?: number;
 }
 
+export interface PublicFacilityService {
+  id: number;
+  facility_id: number;
+  service_name: string;
+  is_available: boolean;
+  created_at?: string;
+}
+
+export interface PublicFacility {
+  id: number;
+  name: string;
+  location: string;
+  type: string;
+  district_id?: number | null;
+  is_active: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  operational_status: string;
+  facility_services: PublicFacilityService[];
+  distance_km?: number;
+}
+
+export interface PaginatedPublicFacilityResponse {
+  items: PublicFacility[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+export interface CitizenAssistantResponse {
+  answer: string;
+  recommended_facilities: PublicFacility[];
+  disclaimer: string;
+  intent: string;
+  sources_used: string[];
+}
+
 export interface AIMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -220,3 +264,5 @@ export interface AIMessage {
     relatedFacilities?: string[];
   };
 }
+
+

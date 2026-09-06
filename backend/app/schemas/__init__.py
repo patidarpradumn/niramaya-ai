@@ -94,10 +94,12 @@ class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    firebase_uid: Optional[str] = None
     name: Optional[str] = None
     facility_id: Optional[int] = None
     state_id: Optional[int] = None
     district_id: Optional[int] = None
+    status: Optional[str] = None
     is_active: bool = True
     approval_status: Optional[str] = None
     created_at: Optional[datetime] = None
@@ -105,6 +107,18 @@ class UserResponse(UserBase):
     def model_post_init(self, __context: Any) -> None:
         if not self.name and self.full_name:
             self.name = self.full_name
+        
+        approval_val = self.approval_status.value if hasattr(self.approval_status, "value") else str(self.approval_status or "")
+        approval_val = approval_val.upper()
+
+        if approval_val == "REJECTED":
+            self.status = "SUSPENDED"
+        elif not self.is_active:
+            self.status = "INACTIVE"
+        elif approval_val == "PENDING":
+            self.status = "PENDING"
+        else:
+            self.status = "ACTIVE"
 
 
 class UserUpdate(BaseModel):
@@ -114,6 +128,12 @@ class UserUpdate(BaseModel):
     facility_id: Optional[int] = None
     state_id: Optional[int] = None
     district_id: Optional[int] = None
+
+
+class UserStatusUpdate(BaseModel):
+    """Schema for updating user active/suspended status."""
+    status: str = Field(..., description="ACTIVE, INACTIVE, or SUSPENDED")
+    is_active: Optional[bool] = None
 
 
 # Facility Service Schemas
@@ -230,15 +250,6 @@ class FacilityResponse(FacilityBase):
 class PaginatedFacilityResponse(BaseModel):
     """Paginated facility list response."""
     items: List[FacilityResponse]
-    total: int
-    page: int
-    size: int
-    pages: int
-
-
-class PaginatedPublicFacilityResponse(BaseModel):
-    """Paginated public facility list response."""
-    items: List[PublicFacilityResponse]
     total: int
     page: int
     size: int
@@ -537,6 +548,27 @@ class AIChatResponse(BaseModel):
     intent_classified: str
     sources_used: List[str]
     disclaimer: str
+
+
+class CitizenAssistantRequest(BaseModel):
+    """Request schema for Citizen AI healthcare navigator."""
+    query: str
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    radius: Optional[float] = 25.0
+    language: Optional[str] = "English"
+
+
+class CitizenAssistantResponse(BaseModel):
+    """Structured response schema for Citizen AI assistant."""
+    answer: str
+    recommended_facilities: List[PublicFacilityResponse] = []
+    disclaimer: str = (
+        "Public Healthcare Notice: This assistant provides public facility and service information only. "
+        "It does not provide medical diagnosis, clinical treatment, or prescriptions. For medical emergencies, dial 112 or 108 immediately."
+    )
+    intent: str = "FACILITY_SERVICE_DISCOVERY"
+    sources_used: List[str] = ["PublicHealthcareCatalog"]
 
 
 class AIExplainResponse(BaseModel):

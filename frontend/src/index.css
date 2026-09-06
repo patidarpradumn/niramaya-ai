@@ -50,6 +50,41 @@
     background-color: #F3F4F6;
     color: #111827;
   }
+
+  /* Interactive Elements cursor defaults */
+  button, 
+  [role="button"], 
+  a, 
+  select, 
+  summary,
+  input[type="checkbox"], 
+  input[type="radio"], 
+  input[type="submit"], 
+  input[type="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled, 
+  [disabled], 
+  input:disabled, 
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Prevent text-selection I-beam cursor on buttons, badges, chips, labels, icons, and static cards */
+  button, 
+  [role="button"], 
+  label, 
+  nav, 
+  header, 
+  svg, 
+  .badge, 
+  .chip,
+  .metric-card,
+  .tab-btn {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 /* Custom scrollbar */

@@ -135,7 +135,9 @@ export default function Register() {
         facility_id: selectedFacilityId ? Number(selectedFacilityId) : undefined,
       });
 
-      if (selectedRole === 'CITIZEN' || selectedRole === 'SUPER_ADMIN') {
+      if (selectedRole === 'CITIZEN') {
+        navigate('/citizen');
+      } else if (selectedRole === 'SUPER_ADMIN') {
         navigate('/dashboard');
       } else {
         setIsSuccess(true);

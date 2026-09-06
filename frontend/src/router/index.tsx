@@ -44,7 +44,7 @@ export function AppRouter() {
 
             {/* Government (protected — all non-citizen roles) */}
             <Route element={<AppLayout />}>
-              <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN','STATE_ADMIN','DISTRICT_ADMIN','HOSPITAL_ADMIN','FACILITY_STAFF']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN','STATE_ADMIN','DISTRICT_ADMIN','FACILITY_ADMIN','HOSPITAL_ADMIN','STAFF','FACILITY_STAFF']} />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/alerts" element={<AlertsPage />} />
@@ -53,8 +53,8 @@ export function AppRouter() {
                 <Route path="/facilities/:id" element={<FacilityDetailPage />} />
               </Route>
 
-              {/* Redistribution - Hospital Admin and above */}
-              <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN','STATE_ADMIN','DISTRICT_ADMIN','HOSPITAL_ADMIN']} />}>
+              {/* Redistribution - Facility Admin and above */}
+              <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN','STATE_ADMIN','DISTRICT_ADMIN','FACILITY_ADMIN','HOSPITAL_ADMIN']} />}>
                 <Route path="/recommendations" element={<RecommendationsPage />} />
               </Route>
 

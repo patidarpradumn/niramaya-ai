@@ -9,7 +9,6 @@ import {
   ArrowLeftRight,
   Wrench,
   Bot,
-  Users,
   Circle,
   LogOut,
   ChevronRight,
@@ -35,7 +34,6 @@ const govNavItems: NavItem[] = [
   { to: '/equipment', icon: <Wrench size={18} />, label: 'Equipment' },
   { to: '/ai-assistant', icon: <Bot size={18} />, label: 'AI Assistant' },
   { to: '/approvals', icon: <UserCheck size={18} />, label: 'Approvals' },
-  { to: '/citizen', icon: <Users size={18} />, label: 'Citizen Portal' },
 ];
 
 const citizenNavItems: NavItem[] = [
@@ -49,18 +47,31 @@ interface SidebarProps {
 
 // Helper to determine if an item is visible for a role
 function isItemVisible(to: string, role: string): boolean {
-  if (['SUPER_ADMIN', 'STATE_ADMIN', 'DISTRICT_ADMIN'].includes(role)) {
-    return true; // These admins see everything
+  const normRole = role.toUpperCase();
+
+  if (normRole === 'SUPER_ADMIN') {
+    return true; // Super Admin sees all government modules
   }
   
-  if (role === 'HOSPITAL_ADMIN') {
-    return !['/facilities', '/predictions', '/approvals'].includes(to);
+  if (normRole === 'STATE_ADMIN' || normRole === 'DISTRICT_ADMIN') {
+    // Dashboard, Facilities, Inventory, Alerts, Predictions, Redistribution, Users/Approvals, AI
+    return !['/equipment'].includes(to);
   }
   
-  if (role === 'FACILITY_STAFF') {
-    return !['/facilities', '/predictions', '/recommendations', '/approvals'].includes(to);
+  if (normRole === 'FACILITY_ADMIN' || normRole === 'HOSPITAL_ADMIN') {
+    // Dashboard, Inventory, Alerts, Predictions, Equipment, Redistribution, Staff/Approvals, AI
+    return !['/facilities'].includes(to);
   }
   
+  if (normRole === 'STAFF' || normRole === 'FACILITY_STAFF') {
+    // Dashboard, Inventory, Alerts, Predictions, Equipment
+    return ['/dashboard', '/inventory', '/alerts', '/predictions', '/equipment'].includes(to);
+  }
+  
+  if (normRole === 'CITIZEN') {
+    return ['/citizen', '/citizen/assistant'].includes(to);
+  }
+
   return true;
 }
 

@@ -8,3 +8,5 @@ export { predictionService, recommendationService } from './predictionService';
 export { equipmentService } from './equipmentService';
 export { aiService } from './aiService';
 export type { AIChatRequest } from './aiService';
+export { publicService } from './publicService';
+
