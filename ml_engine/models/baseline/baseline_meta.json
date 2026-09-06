@@ -1,0 +1,25 @@
+{
+  "model_version": "baseline_v1",
+  "model_type": "SeasonalNaive_MovingAverage_Baseline",
+  "metrics": {
+    "7d": {
+      "mae": 10.2447,
+      "rmse": 16.961,
+      "wape": 0.1786,
+      "smape": 25.2695
+    },
+    "14d": {
+      "mae": 10.9131,
+      "rmse": 19.4767,
+      "wape": 0.1888,
+      "smape": 25.4198
+    },
+    "30d": {
+      "mae": 11.7382,
+      "rmse": 21.7661,
+      "wape": 0.1987,
+      "smape": 25.7855
+    }
+  },
+  "status": "ACTIVE_FALLBACK"
+}

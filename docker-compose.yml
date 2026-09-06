@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: niramaya_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - PROJECT_NAME=Niramaya AI
+      - ML_PROVIDER=real
+      - ML_ENGINE_URL=http://ml_engine:8000
+    depends_on:
+      - ml_engine
+
+  ml_engine:
+    build: 
+      context: ./ml_engine
+      dockerfile: Dockerfile
+    container_name: niramaya_ml_engine
+    ports:
+      - "8001:8000"
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: niramaya_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

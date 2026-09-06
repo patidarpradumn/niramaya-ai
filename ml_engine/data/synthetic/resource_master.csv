@@ -1,0 +1,26 @@
+resource_id,name,category,unit,min_stock,reorder_level,shelf_life_days
+RES001,Paracetamol 500mg,Analgesics,Tablets,2000,5000,730
+RES002,Ibuprofen 400mg,Analgesics,Tablets,1000,2500,730
+RES003,Diclofenac 50mg,Analgesics,Tablets,800,2000,730
+RES004,Amoxicillin 500mg,Antibiotics,Capsules,1500,4000,730
+RES005,Azithromycin 500mg,Antibiotics,Tablets,1000,2500,730
+RES006,Ceftriaxone 1g Injection,Antibiotics,Vials,500,1200,730
+RES007,Ciprofloxacin 500mg,Antibiotics,Tablets,800,2000,730
+RES008,Doxycycline 100mg,Antibiotics,Capsules,600,1500,730
+RES009,ORS (Oral Rehydration Salts),Gastrointestinal,Sachets,2500,6000,730
+RES010,Zinc Sulphate 20mg,Gastrointestinal,Tablets,1000,2500,730
+RES011,Pantoprazole 40mg,Gastrointestinal,Tablets,1200,3000,730
+RES012,Metronidazole 400mg,Gastrointestinal,Tablets,800,2000,730
+RES013,Salbutamol Inhaler 100mcg,Respiratory,Inhalers,300,800,730
+RES014,Cetirizine 10mg,Respiratory,Tablets,1500,3500,730
+RES015,Metformin 500mg,Chronic Disease,Tablets,2000,5000,730
+RES016,Amlodipine 5mg,Chronic Disease,Tablets,1800,4500,730
+RES017,Atenolol 50mg,Chronic Disease,Tablets,1000,2500,730
+RES018,Insulin Human Regular 40IU/ml,Chronic Disease,Vials,200,500,540
+RES019,Oxytocin 10IU Injection,Maternal Health,Ampoules,400,1000,540
+RES020,Iron & Folic Acid Tablets,Maternal Health,Tablets,2500,6000,730
+RES021,Rabies Vaccine (PVRV),Emergency & Vaccines,Vials,150,400,540
+RES022,Anti-Snake Venom Serum,Emergency & Vaccines,Vials,100,250,730
+RES023,Normal Saline 0.9% 500ml,IV Fluids,Bottles,1200,3000,730
+RES024,Ringer Lactate 500ml,IV Fluids,Bottles,1000,2500,730
+RES025,Artemether + Lumefantrine,Antimalarials,Tablets,500,1200,730

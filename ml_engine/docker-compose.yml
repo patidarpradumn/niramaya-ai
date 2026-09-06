@@ -1,0 +1,12 @@
+services:
+  mediguard-ml:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mediguard-ml-engine:latest
+    container_name: mediguard-ml-engine
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped

@@ -1,0 +1,18 @@
+# .dockerignore
+**/.DS_Store
+**/._*
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.git/
+.gitignore
+.agents/
+.gemini/
+*.pptx
+notebooks/

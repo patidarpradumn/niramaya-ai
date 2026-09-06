@@ -1,0 +1,9 @@
+.venv
+__pycache__
+*.pyc
+*.db
+**/._*
+**/.DS_Store
+alembic.ini
+alembic/
+tests/

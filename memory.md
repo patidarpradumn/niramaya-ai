@@ -1,0 +1,415 @@
+# Niramaya AI (formerly MediGuard AI) - Project Memory & Implementation Log
+
+This file serves as a persistent memory and implementation log for the Niramaya AI project. Update this file whenever a new feature is implemented, a bug is fixed, or a significant architectural change is made. This helps maintain context without having to scan the entire codebase.
+
+---
+
+## 1. Project Overview
+- **Project Name:** Niramaya AI (formerly MediGuard AI)
+- **Tagline:** INTELLIGENCE FOR A HEALTHIER NATION
+- **Type:** Public Healthcare Resource & Supply-Chain Intelligence Platform
+- **Core Functionality:** AI-powered decision-support platform for public healthcare supply-chain resilience (predictions, risk detection, alerts, and recommendations with human-in-the-loop approval).
+- **Target Users:** Government health officials, facility administrators, authorized healthcare personnel.
+
+---
+
+## 2. Project Structure & Key Files
+
+### Backend (FastAPI)
+- **Location:** `backend/`
+- **Key Files & Folders:**
+  - `app/main.py`: FastAPI application entry point.
+  - `app/config.py`: Configuration settings using Pydantic Settings.
+  - `app/database.py`: Database setup with SQLAlchemy.
+  - `app/models/`: SQLAlchemy models (`User`, `Facility`, `Inventory`, `Alert`, `Prediction`, `AuditLog`).
+  - `app/schemas/`: Pydantic schemas for data validation.
+  - `app/routers/`: API endpoints (`auth`, `users`, `facilities`, `inventory`, `alerts`, `predictions`, `ai`, `dashboard`).
+  - `app/services/`: Business logic services (ML engine service, AI service with Gemini).
+  - `app/utils/`: Helper utilities (JWT authentication, password hashing).
+  - `app/seed.py`: Initial database seeding script with demo data.
+
+### Frontend (React + Vite + TypeScript)
+- **Location:** `frontend/`
+- **Key Files & Folders:**
+  - `src/App.tsx`: Main React app component & routing setup.
+  - `src/context/AuthContext.tsx`: Authentication state management.
+  - `src/services/`: API client services using Axios.
+  - `src/pages/`: Page components (Dashboard, Inventory, Alerts, Predictions, AI Assistant, Login).
+  - `src/components/`: Reusable UI components (Sidebar, Navbar, Cards, Charts, Tables).
+
+---
+
+## 3. Test Credentials & Demo Accounts
+- **Admin:** `admin@mediguard.gov` / `admin123`
+- **Manager:** `manager@hospital.gov` / `manager123`
+- **Viewer:** `viewer@clinic.gov` / `viewer123`
+
+---
+
+## 4. How to Run the Project
+
+### Backend Setup & Execution
+1. Navigate to backend: `cd backend`
+2. Install dependencies: `pip install -r requirements.txt`
+3. Configure environment variables in `.env` (or copy from `.env.example`).
+4. Seed test data: `python -m app.seed`
+5. Run dev server: `uvicorn app.main:app --reload` (runs on `http://localhost:8000`)
+
+### Frontend Setup & Execution
+1. Navigate to frontend: `cd frontend`
+2. Install dependencies: `npm install`
+3. Run dev server: `npm run dev` (runs on `http://localhost:5173`)
+
+---
+
+## 5. Technical Stack Summary
+- **Frontend:** React 18, TypeScript, Tailwind CSS, Recharts, Axios, Lucide Icons.
+- **Backend:** Python FastAPI, SQLAlchemy ORM, Pydantic, JWT Auth, Bcrypt.
+- **AI/ML:** Google Gemini API (Natural language assistant & explanations), Mock ML Service for demand forecasting.
+- **Database:** PostgreSQL / SQLite (for local development).
+
+---
+
+## 6. Implementation Log
+*(Add new entries here when implementing features. Use format: `[Date] - [Feature/Component] - [Brief Description]`)*
+
+- **[2026-09-02] - PHASE 1: Backend Foundation Completed:**
+  - Standardized modular backend directory layout (`core/`, `db/`, `models/`, `schemas/`, `api/v1/`, `services/`, `repositories/`, `integrations/`, `utils/`, `tests/`).
+  - Environment-based configuration with `Pydantic Settings` in `app/core/config.py`.
+  - Database engine, session lifecycle & declarative base in `app/db/`.
+  - Centralized error handling for API, HTTP, validation, and unhandled errors in `app/core/exceptions.py`.
+  - API v1 router composition with `GET /api/v1/health` endpoint returning API status & DB connectivity.
+  - Alembic migrations initialized and configured in `alembic/env.py`.
+  - Pytest setup (`tests/conftest.py`, `tests/test_health.py`) verified with 100% passing tests.
+
+- **[2026-09-02] - PHASE 2: Core Database Models Completed:**
+  - Implemented all 19 SQLAlchemy database models: `Role`, `State`, `District`, `Facility`, `FacilityService`, `User`, `Item`, `Inventory`, `StockMovement`, `ConsumptionRecord`, `Equipment`, `MaintenanceRecord`, `Prediction`, `Risk`, `Alert`, `Recommendation`, `Transfer`, `ApprovalAction`, `AuditLog`.
+  - Defined explicit foreign key constraints, indexes, unique constraints, and check constraints (`check_inventory_stock_non_negative`, `check_consumption_qty_non_negative`, `check_transfer_different_facilities`).
+  - Added UTC-aware timestamp tracking (`created_at`, `updated_at`, `record_date`, `predicted_date`).
+  - Generated and executed Alembic autogenerated migration (`alembic/versions/f9845c4f8a84_add_core_19_database_models.py`).
+  - Updated seed script (`app/seed.py`) populating representative demo data across all 19 models.
+  - Comprehensive unit/integration tests in `tests/test_models.py` covering model relationships, check constraints, unique constraints, and Alembic upgrade/downgrade migrations (13/13 passing).
+
+- **[2026-09-02] - PHASE 3: Authentication Completed:**
+  - Implemented JWT access tokens, password hashing with bcrypt, secure token validation, user authentication dependencies (`get_current_user`, `get_current_active_user`).
+  - Added REST endpoints `POST /api/v1/auth/login` and `GET /api/v1/auth/me`.
+  - Added comprehensive authentication test suite in `tests/test_auth.py` verifying login, invalid credentials, inactive users, token expiration, and security checks (10/10 passing).
+
+- **[2026-09-02] - PHASE 4: Role-Based Access Control (RBAC) Completed:**
+  - Implemented reusable `require_roles` dependency supporting hierarchical roles (`SUPER_ADMIN`, `STATE_ADMIN`, `DISTRICT_ADMIN`, `HOSPITAL_ADMIN`, `FACILITY_STAFF`, `CITIZEN`).
+  - Implemented server-side geographic boundary checks (`check_facility_access`) validating state, district, and facility ownership to prevent horizontal privilege escalation.
+  - Secured all domain routers (`facilities`, `inventory`, `alerts`, `predictions`, `dashboard`, `ai`, `users`) and registered them centrally in `app/api/v1/api.py`.
+  - Created `tests/test_rbac.py` validating security boundary rules for all roles (7/7 passing).
+
+- **[2026-09-02] - PHASE 5: Facility Management Module Completed:**
+  - Expanded `Facility` and `FacilityService` SQLAlchemy models with `latitude`, `longitude`, `operational_status`, and expanded `FacilityTypeEnum` (`DISTRICT_HOSPITAL`, `CIVIL_HOSPITAL`, `CHC`, `PHC`, `OTHER`).
+  - Added robust Pydantic schemas in `app/schemas/` with field validators for latitude (-90 to +90) and longitude (-180 to +180), facility type enum validation, pagination schemas, and public citizen-safe response schemas (`PublicFacilityResponse`).
+  - Refactored `app/routers/facilities.py` implementing administrative CRUD (`POST`, `GET`, `PUT`, `DELETE`), facility service sub-resource management, state/district/facility_type filtering, search by name, pagination (`skip`, `limit`), and RBAC/geographic access enforcement.
+  - Implemented public citizen endpoints (`GET /api/v1/facilities/public`, `GET /api/v1/facilities/public/{id}`) returning non-sensitive public representations omitting administrative contact details.
+  - **[2026-09-02] - PHASE 6: Inventory Management & Item Catalog Module Completed:**
+  - Implemented medical Item catalog management (`ItemService`, `app/routers/items.py`) with search, category filtering, and item code uniqueness validation.
+  - Implemented `InventoryService` (`app/routers/inventory.py`) with quantity/threshold boundary checks (`current_stock >= 0`, `max_threshold >= min_threshold`), batch tracking (`batch_number`, `expiry_date`), and low stock status calculation (`is_low_stock`, `stock_level`).
+  - Added automated item catalog lookup and creation when adding new inventory entries by `item_name` or `item_code`.
+  - Enforced strict facility isolation and RBAC rules (rejecting `CITIZEN` role requests with `403 Forbidden`).
+  - Implemented `tests/test_inventory.py` covering item/inventory CRUD, stock validation, batch/expiry handling, low stock filtering, and RBAC boundary isolation.
+  - Verified full test suite across all modules (40/40 tests passing).
+
+- **[2026-09-02] - PHASE 7: Stock Movement Module Completed:**
+  - Expanded `StockMovementTypeEnum` in `app/models/__init__.py` to support all movement types: `RECEIVED`, `ISSUED`, `TRANSFERRED_IN`, `TRANSFERRED_OUT`, `ADJUSTMENT`, `DAMAGED`, `EXPIRED`.
+  - Implemented `StockMovementService` in `app/services/stock_movement_service.py` enforcing atomic database transactions, strict stock validation (`current_stock >= 0`), concurrency control via `with_for_update()`, audit trail preservation (`created_by_user_id`, timestamp), and system audit logging in `AuditLog`.
+  - Implemented REST endpoints in `app/routers/stock_movements.py` (`POST /api/v1/stock-movements`, `GET /api/v1/stock-movements`) and sub-resource endpoint `GET /api/v1/inventory/{inventory_id}/movements` in `app/routers/inventory.py`.
+  - Supported comprehensive filtering by `facility_id`, `item_id`, `movement_type`, `inventory_id`, and date range (`start_date`, `end_date`).
+  - Enhanced `check_facility_access` helper in `app/utils/__init__.py` to seamlessly accept both integer `facility_id` and `Facility` model instances for geographic/location access control.
+  - Created `tests/test_stock_movements.py` covering stock receiving/issuing, negative stock prevention, inter-facility transfers, transaction rollback on failure, audit log generation, RBAC isolation, and movement filtering.
+  - Verified full backend test suite (48/48 tests passing).
+
+- **[2026-09-03] Phase 8: Consumption Records**
+  - Created `ConsumptionRecord` Pydantic schemas: `ConsumptionCreate`, `ConsumptionResponse`, `ConsumptionSummaryResponse`, `MLInputPreparationResponse` in `app/schemas/__init__.py`.
+  - Implemented `ConsumptionService` (`app/services/consumption_service.py`) to handle business logic for tracking historical resource usage, aggregating data (daily/weekly), and formatting ML time-series data inputs.
+  - Implemented REST endpoints in `app/routers/consumption.py`: `POST /api/v1/consumption/`, `GET /api/v1/consumption/`, `GET /api/v1/consumption/summary`, and `GET /api/v1/consumption/ml-input`.
+  - Integrated the `consumption` router into the main v1 API (`app/api/v1/api.py`).
+  - Corrected test authentication dependency issues (`sub` claim type) in `tests/test_consumption.py` and validated strict DB facility existence checks in `ConsumptionService`.
+  - Handled strict URL-encoding of timestamp strings via httpx parameters to prevent `422 Unprocessable Entity` issues.
+  - Created `tests/test_consumption.py` to test CRUD operations, data aggregation, ML formatting, and RBAC geographic facility isolation.
+  - Verified full backend test suite (54/54 tests passing).
+
+- **[2026-09-03] - PHASE 9: ML Engine Adapter Integration Completed:**
+  - Created provider abstraction `MLProvider` (`app/integrations/ml.py`) with:
+    - `MockMLProvider`: Deterministic, rule-based responses for local testing and development.
+    - `RealMLProvider`: Robust HTTP client (using `httpx`) with connection retry logic, exponential backoff, configurable timeouts (`ML_ENGINE_TIMEOUT`), API key auth header, and schema validation.
+    - Provider Factory: `get_ml_provider()` to dynamically switch providers based on settings (`ML_PROVIDER_TYPE` / `ML_ENGINE_MOCK`).
+  - Implemented `MLAdapterService` (`app/services/ml_adapter_service.py`) for orchestrating prediction requests, risk assessments, and persisting output predictions/risks to PostgreSQL (`Prediction` and `Risk` models).
+  - Added prediction endpoints in `app/routers/predictions.py`:
+    - `POST /api/v1/predictions/forecast` (Demand Forecasting)
+    - `POST /api/v1/predictions/stockout-risk` (Stock-out Risk Assessment)
+    - `POST /api/v1/predictions/expiry-risk` (Batch Expiry Risk Analysis)
+    - `POST /api/v1/predictions/redistribution-score` (Inter-facility Redistribution Recommendation)
+  - Added custom ML exception handling (`MLTimeoutException`, `MLConnectionException`, `MLResponseException`, `MLValidationError`) with HTTP status mappings (504, 503, 502, 422/500).
+  - Implemented unit and integration tests in `tests/test_ml_adapter.py` covering mock provider calculations, real provider HTTP mocking (success, timeout, connection drop, server error, schema validation), factory selection, service database persistence, RBAC checks, and endpoint resilience.
+  - Verified full test suite across backend (72/72 tests passing).
+
+- **[2026-09-03] - PHASE 10: Risk + Alerts Module Completed:**
+  - Added configurable risk and alert thresholds in `app/config.py` (`ALERT_STOCKOUT_CRITICAL_DAYS`, `ALERT_STOCKOUT_HIGH_DAYS`, `ALERT_EXPIRY_CRITICAL_DAYS`, `ALERT_DUPLICATE_WINDOW_HOURS`, etc.).
+  - Implemented `AlertService` (`app/services/alert_service.py`) providing automatic stock-out and expiry severity calculation, active alert deduplication within configurable windows, structured metadata details, and full lifecycle state tracking (`ACKNOWLEDGED`, `RESOLVED`, `DISMISSED`).
+  - Added robust Pydantic schemas (`AlertCreate`, `AlertUpdate`, `AlertResponse`, `AlertAcknowledge`) in `app/schemas/__init__.py` supporting case-insensitive enum validation and lifecycle timestamps (`acknowledged_at`, `resolved_at`).
+  - Implemented REST endpoints in `app/routers/alerts.py`:
+    - `GET /api/v1/alerts` (List alerts with filtering by facility, item, risk category, severity, status, and acknowledgment state).
+    - `GET /api/v1/alerts/{id}` (Get single alert detail with facility RBAC isolation).
+    - `POST /api/v1/alerts` (Operational alert creation).
+    - `POST /api/v1/alerts/{id}/acknowledge` (Operational acknowledgment).
+    - `PATCH /api/v1/alerts/{id}` (Status and resolution updates).
+  - Created `tests/test_alerts.py` covering threshold calculations, duplicate prevention, RBAC geographic isolation, and endpoint CRUD operations.
+  - Verified full test suite across entire backend (84/84 tests passing).
+
+- **[2026-09-03] - PHASE 11: Cross-Facility Redistribution Recommendation Module Completed:**
+  - Implemented redistribution service (`app/services/redistribution_service.py`) supporting:
+    - Haversine geographic distance calculation between facility coordinates.
+    - Decision-support recommendation engine identifying surplus stock vs. projected shortage across facilities.
+    - Full human-in-the-loop workflow (`Recommendation` -> Review -> `Approve` / `Reject` / `Modify` -> `Transfer` creation -> `StockMovement` execution -> `AuditLog`).
+    - Database transaction integrity: approving recommendations automatically creates stock movements and updates inventory safely within atomic transactions.
+  - Implemented REST endpoints in `app/routers/recommendations.py`:
+    - `POST /api/v1/recommendations/generate` (Generate inter-facility redistribution recommendations)
+    - `GET /api/v1/recommendations` (List recommendations with status, facility, item, and priority filtering)
+    - `GET /api/v1/recommendations/{id}` (Get single recommendation details with RBAC check)
+    - `POST /api/v1/recommendations/{id}/approve` (Approve recommendation, creating stock movements and transfer logs)
+    - `POST /api/v1/recommendations/{id}/reject` (Reject recommendation with user notes)
+    - `POST /api/v1/recommendations/{id}/modify` (Modify recommended quantity before approving)
+  - Configured explicit foreign key relationships (`foreign_keys="[Recommendation.facility_id]"`) on `Facility` and `Recommendation` SQLAlchemy models.
+  - Added comprehensive test suite in `tests/test_redistribution.py` covering distance calculations, recommendation generation, approval/rejection/modification workflows, RBAC/cross-facility authorization, inventory rollback on insufficient stock, and audit logging.
+  - Verified full test suite across entire backend (92/92 tests passing).
+
+- **[2026-09-03] - PHASE 12: Equipment & Maintenance Module Completed:**
+  - Implemented `EquipmentService` (`app/services/equipment_service.py`) supporting:
+    - Equipment CRUD operations (`OPERATIONAL`, `UNDER_MAINTENANCE`, `NON_FUNCTIONAL`, `RETIRED`).
+    - Maintenance record logging and downstream updates (`last_maintenance_date`, `next_maintenance_date`).
+    - Dynamic equipment downtime calculation based on non-operational history.
+    - Overdue maintenance detection and automatic operational risk alert triggering via `AlertService`.
+    - Strict facility-level RBAC enforcement.
+  - Implemented REST endpoints in `app/routers/equipment.py` and `app/routers/maintenance.py`:
+    - `POST /api/v1/equipment` (Create equipment entry)
+    - `GET /api/v1/equipment` (List equipment with facility, status, type, and overdue filters)
+    - `GET /api/v1/equipment/{id}` (Get equipment details & downtime analysis)
+    - `PUT /api/v1/equipment/{id}` (Update equipment info/status)
+    - `DELETE /api/v1/equipment/{id}` (Delete equipment entry)
+    - `POST /api/v1/maintenance` (Log maintenance record)
+    - `GET /api/v1/maintenance` (List maintenance history for equipment/facility)
+  - Registered routers in `app/routers/__init__.py` and `app/api/v1/api.py`.
+  - Updated `AuditLog` model (`entity_type` and `entity_id` made nullable) to support generic system audit events.
+  - Enhanced `require_roles` utility in `app/utils/__init__.py` to accept lists or tuples of allowed roles.
+  - Added comprehensive test suite in `tests/test_equipment.py` covering equipment CRUD, status transitions, risk alerts, maintenance records, downtime calculation, overdue detection, and RBAC isolation.
+- **[2026-09-04] - PHASE 13: Immutable Audit Logging Completed:**
+  - Hardened `AuditLog` model in `app/models/__init__.py` with request `correlation_id` support.
+  - Implemented SQLAlchemy ORM event listeners (`before_update`, `before_delete`) on `AuditLog` to enforce DB-level immutability, raising a `ValueError` on any mutation or deletion attempt.
+  - Implemented `AuditService` (`app/services/audit_service.py`) supporting:
+    - Centralized logging with recursive data sanitization (`sanitize_metadata`) to redact passwords, API keys, tokens, and secrets from audit metadata.
+    - Multi-criteria administrative querying (by user/actor ID, action, entity type, entity ID, correlation ID, date ranges, and free-text search).
+  - Built Request Correlation ID middleware (`correlation_id_middleware`) in `app/main.py` propagating `X-Request-ID` headers to FastAPI request state and responses.
+  - Built REST router `app/routers/audit_logs.py` providing:
+    - `GET /api/v1/audit-logs` (Paginated list of system audit logs with multi-field filtering).
+    - `GET /api/v1/audit-logs/{id}` (Get single audit log entry details).
+    - Strictly enforced admin-only access (`SUPER_ADMIN`, `STATE_ADMIN`, `DISTRICT_ADMIN`), blocking non-admin roles (`FACILITY_STAFF`, `CITIZEN`) with `403 Forbidden`.
+    - Maintained absolute route immutability (no write/update/delete endpoints exist).
+  - Integrated `audit_service` into authentication and user management operations (`login`, `login_failed`, `register`, `logout`, `update_profile`, `delete_user`).
+  - Added `AuditLogResponse` and `PaginatedAuditLogResponse` schemas in `app/schemas/__init__.py`.
+  - Registered `audit_logs` router in `app/routers/__init__.py` and `app/api/v1/api.py`.
+  - Created comprehensive test suite in `tests/test_audit.py` covering log creation, database immutability, metadata sanitization, admin RBAC enforcement, single log retrieval, multi-field filtering/search, and correlation ID header propagation.
+  - Verified full backend test suite (105/105 tests passing).
+
+---
+
+## 6. Recent Updates (Continued)
+- **[2026-09-04] - PHASE 14: Gemini AI Integration Completed:**
+  - Implemented `GeminiService` in `app/services/gemini_service.py` to handle prompt formatting, API calls, timeouts, and error handling for `google-genai` SDK.
+  - Configured systemic grounding prompts requiring strict reliance on provided backend operational context to prevent AI hallucination, diagnoses, or administrative overreach.
+  - Implemented REST router `app/routers/ai.py` providing endpoints:
+    - `POST /api/v1/ai/explain-alert` (Context-aware alert explanation).
+    - `POST /api/v1/ai/explain-prediction` (Demand/risk prediction explanation).
+    - `POST /api/v1/ai/explain-recommendation` (Redistribution strategy and logic explanation).
+    - `POST /api/v1/ai/facility-summary` (Comprehensive facility operational snapshot generation).
+    - `POST /api/v1/ai/district-summary` (High-level district health analysis).
+    - `POST /api/v1/ai/chat` (Strictly intent-classified general AI assistance constrained to public health supply chains).
+  - Updated configuration in `app/config.py` to use Pydantic V2 `SettingsConfigDict` and removed legacy `class Config`.
+  - Upgraded Google GenAI integration from `google.generativeai` to `google-genai` to address Python API deprecation warnings.
+- **[2026-09-04] - PHASE 15: Schema Consistency & Test Suite Integrity:**
+  - Fully realigned SQLAlchemy ORM models with physical Alembic migration files by generating a comprehensive baseline database schema. Solved critical mapping omissions involving `Transfers`, `ApprovalActions`, JSON `details` fields, and `facility_id` constraints.
+  - Refactored all Pydantic schemas in `app/schemas/__init__.py` to use `model_config = ConfigDict(from_attributes=True)` instead of legacy V1 configs.
+  - Stabilized Pytest execution environment reaching a 100% pass rate across 119 tests covering models, integrations, RBAC, Gemini mock services, and API endpoints.
+  - Resolved a dashboard SQLite `TypeError: fromisoformat` issue by replacing `cast(..., Date)` with `func.date(...)` for compatibility.
+  - Exposed `/api/v1/dashboard/` root endpoint for correct RBAC test validation and proper role-based data isolation.
+  - Re-architected `tests/conftest.py` test database to use an isolated in-memory SQLite schema (`sqlite:///:memory:`) paired with `StaticPool`. This completely resolved intermittent schema-locking and concurrent DDL racing (`no such table: alerts`) caused by FastAPI's lifespan `init_db()` interacting with a file-based test database.
+- **[2026-09-04] - PHASE 16: Citizen APIs:**
+  - Implemented public, citizen-safe API layer (`/api/v1/public`) that strictly filters out private data (staff users, internal stock levels, recommendations).
+  - Supported paginated geospatial filtering (bounding box and Haversine formula) for `/nearby` facility discovery based on coordinates.
+  - Developed and passed 6 robust tests to ensure full role-based data isolation and sensitive field exclusion for citizen access.
+
+- **[2026-09-04] - PHASE 17: Backend Integration Testing Completed:**
+  - Ran full end-to-end integration test workflow: admin login → facility creation → item creation → inventory → stock receipt → consumption → ML prediction (MockMLProvider) → risk generation → alert creation → redistribution recommendation → approval → transfer → audit log → Gemini explanation (mocked) → citizen facility search → citizen RBAC denial.
+  - Verified auth failures, authorization failures, cross-facility access denial, invalid input handling, DB transaction rollback, ML service failure, and Gemini failure scenarios.
+  - Fixed alert response parsing (list vs dict), RBAC citizen test (GET recommendation instead of POST), removed sensitive fields (`contact_email`, `contact_phone`) from `PublicFacilityResponse`.
+  - Resolved FastAPI/Starlette deprecation warnings (`HTTP_422_UNPROCESSABLE_ENTITY` → `HTTP_422_UNPROCESSABLE_CONTENT`).
+  - Replaced all legacy `datetime.utcnow()` with timezone-aware `datetime.now(timezone.utc)` across `dashboard.py` and service initializations.
+  - Final result: **126/126 tests passing**, 0 failures.
+
+- **[2026-09-04] - PHASE 18: Frontend Foundation Completed:**
+  - Scaffolded React + Vite + TypeScript project in `frontend/` with Tailwind CSS, React Router, Axios, Recharts, and Lucide Icons.
+  - **Architecture:** `src/pages/`, `src/components/`, `src/context/`, `src/services/`, `src/hooks/`, `src/types/`, `src/utils/`.
+  - **Auth Flow:** `AuthContext.tsx` with JWT login/logout, token storage in localStorage, auto-refresh on mount via `GET /api/v1/auth/me`.
+  - **API Client:** Centralized Axios instance in `services/api.ts` with Bearer token interceptor, 401 auto-redirect, and request/response interceptors. Base URL: `/api/v1`.
+  - **Routing:** `App.tsx` with `ProtectedRoute` (redirects to `/login` if unauthenticated) and `PublicRoute` (redirects to `/dashboard` if authenticated).
+  - **Layout:** Responsive sidebar navigation with mobile overlay, user info section, logout button, and sticky header.
+  - **Pages Created:**
+    - `Login.tsx` — email/password form with error handling, loading state, and demo credentials display.
+    - `Dashboard.tsx` — KPI cards (facilities, items, critical alerts, low stock), stock status pie chart, stock distribution bar chart, recent alerts list.
+    - `Inventory.tsx` — inventory list with facility/category filtering.
+    - `Alerts.tsx` — alerts list with severity/status filtering, acknowledge action.
+    - `Predictions.tsx` — demand predictions and risk factors display.
+    - `Facilities.tsx` — facility list view.
+    - `AIAssistant.tsx` — AI chat interface.
+  - **Types:** `types/index.ts` with TypeScript interfaces for `User`, `Facility`, `InventoryItem`, `Alert`, `Prediction`, `DashboardSummary`, `Token`, `LoginRequest`, `AIQueryRequest`, `AIResponse`, `RiskFactor`.
+  - **Vite Proxy:** Dev server on port 5173 proxying `/api` to `http://localhost:8000`.
+  - **Build:** Production build succeeds (660 KB JS bundle).
+
+- **[2026-09-04] - PHASE 20: Government Admin Dashboard Completed:**
+  - **KPI Metrics Cards (7 Cards):** Total Facilities, Critical Alerts, Predicted Shortages, Expiry Risks, Redistribution Opportunities, Equipment Issues, Pending Actions. All calculated dynamically from API data (`/api/v1/dashboard/summary`, `/dashboard/stock-risks`, `/dashboard/expiry-risks`, `/recommendations/`, `/equipment/`).
+  - **Recharts Integration:**
+    - **Stock Risk Distribution:** Interactive Pie Chart breaking down risks into Out of Stock, Low Stock, Normal Stock, Overstock.
+    - **Stock-Out Risk Comparison:** Interactive Bar Chart comparing current vs threshold stock per item.
+  - **Data Lists & Visual Panels:**
+    - **Expiry Risk Items List:** Displaying item names, facility name, batch number, days until expiry, and risk levels with status badges.
+    - **Redistribution Recommendations Panel:** Displaying source and destination facility pairings, item names, surplus vs required quantities, priority badges, and quick action buttons.
+  - **Role-Aware Scoping:** Integrated user context (`AuthContext`) to display an active scope badge (e.g. State: "Maharashtra", District: "Pune", Facility ID: "101", or "National Scope").
+  - **State Handling:** Integrated full loading skeletons (`Loader2`), clear empty state indicators ("All Clear - No Expiry Risks Detected"), and error state banners with manual retry capabilities (`RefreshCw`).
+  - **Test Suite (`src/__tests__/dashboard.test.tsx`):** Created 6 Vitest + RTL tests covering rendering, loading states, API failure handling, empty data views, Recharts rendering, and role-scoped data displays.
+  - **Verification:** **14/14 frontend tests passing** (Phase 19 + Phase 20); `npm run build` succeeds cleanly with 0 TypeScript/linter errors.
+
+- **[2026-09-04] - PHASE REBRANDING & CUSTOM LOGIN PAGE:**
+  - **Project Name Rebrand:** Official project rename from MediGuard AI to **Niramaya AI** with tagline *"INTELLIGENCE FOR A HEALTHIER NATION"*.
+  - **Custom Glassmorphic Login UI:**
+    - Dark Navy/Indigo radial gradient background with soft ambient glow.
+    - Brand Logo header with blue rounded badge "N" and uppercase serif typography.
+    - Role Selector Pills: Grid of 6 role buttons (`Super Admin`, `State Admin`, `District Admin`, `Hospital`, `Staff`, `Citizen`) allowing 1-click role switching and auto-filling demo credentials.
+    - Glassmorphic login card with email & password inputs, show/hide password toggle, and "Remember this device" checkbox.
+    - Security Badge: Integrated gold/amber `🔒 Encrypted` status indicator.
+    - Primary Submit Button: Gradient blue `Secure Login` button with shield icon and loading spinners.
+    - Biometrics Trigger: Interactive fingerprint scanner button with animated pulse state.
+    - Footer branding: `Ministry of Health & Family Welfare • Secure Portal` and help links.
+  - **Test Suite Updates:** Updated RTL queries in `auth_rbac.test.tsx` and `dashboard.test.tsx`; **14/14 tests passing**.
+
+- **[2026-09-04] - PHASE 21: Firebase Authentication & Registration Completed:**
+  - Integrated Firebase Authentication to replace legacy JWT-based identity management.
+  - Refactored `AuthContext.tsx` to utilize `onAuthStateChanged` for global session management and added a robust `register` function.
+  - Built custom `Register.tsx` page matching the Niramaya AI "Glassmorphic" branding to allow public Citizen sign-ups.
+  - Updated backend `/api/v1/auth/register` to support dual creation in PostgreSQL and Firebase.
+  - Refactored test suite in `auth_rbac.test.tsx` using Firebase SDK mocks, successfully passing all tests (14/14 tests passing).
+
+- **[2026-09-05] - PHASE 21: Facilities + Inventory UI Completed:**
+  - **Facilities UI (`src/pages/Facilities.tsx`):**
+    - Responsive card and table directory views with operational status badges and type indicators.
+    - Comprehensive filtering (search by name/location, type filter, operational status filter) and client/server pagination.
+    - Sorting by name, type, and location with ascending/descending toggles.
+    - Facility detail modal displaying facility metadata, geo-coordinates, contact details, associated services, and quick navigation to facility inventory.
+    - Role-gated Facility Creation & Update modal forms (`SUPER_ADMIN`, `STATE_ADMIN`, `DISTRICT_ADMIN`, `HOSPITAL_ADMIN`) with client validation (mandatory name/location, latitude -90..90, longitude -180..180, email format) and API error handling.
+  - **Inventory UI (`src/pages/Inventory.tsx`):**
+    - Live inventory tracking table with search, facility selector, category filter, and low-stock filter.
+    - Visual Stock Risk Badges (`critical`, `low`, `adequate`, `overstocked`) and mini progress threshold gauges.
+    - Expiry indicators with days-to-expiry calculations (critical <30d, warning <90d, safe >90d, expired).
+    - Comprehensive Inventory Details modal with:
+      - Stock threshold buffer gauge.
+      - **Stock Movement History tab**: Lists movement history from `/inventory/{id}/movements` and `/stock-movements/` with movement type badges (`RECEIVED`, `ISSUED`, `TRANSFERRED_IN`, `TRANSFERRED_OUT`, `ADJUSTMENT`, `DAMAGED`, `EXPIRED`), quantity, timestamp, and audit trail.
+      - **Consumption History tab**: Lists historical consumption records from `/consumption/` and aggregated summary metrics (total consumed, period type, record count).
+    - Role-gated modal forms for authorized users (`SUPER_ADMIN`, `STATE_ADMIN`, `DISTRICT_ADMIN`, `HOSPITAL_ADMIN`, `FACILITY_STAFF`):
+      - Add Stock Item modal (`POST /api/v1/inventory/`).
+      - Edit Stock Thresholds modal (`PUT /api/v1/inventory/{id}`).
+      - Record Stock Movement modal (`POST /api/v1/stock-movements/`).
+      - Log Resource Consumption modal (`POST /api/v1/consumption/`).
+    - Unauthorized roles (Citizen) are prevented from seeing or submitting mutations.
+  - **API Services & Types:**
+    - Added `consumptionAPI` (`list`, `get`, `getSummary`, `create`) in `src/services/api.ts`.
+    - Enhanced `facilitiesAPI`, `inventoryAPI`, and `stockMovementsAPI` with full parameter support.
+    - Added TypeScript interfaces for `ConsumptionRecord`, `ConsumptionSummaryResponse`, and form inputs in `src/types/index.ts`.
+    - Created `src/vite-env.d.ts` for Vite client environment type definitions.
+  - **Test Suite (`src/__tests__/facilities_inventory.test.tsx`):**
+    - 12 comprehensive Vitest + RTL tests covering rendering, search/filtering, pagination, details modals, services lists, movement and consumption history, form validation, API errors, and role restrictions.
+    - Verified all 26/26 frontend tests passing cleanly; production build (`npm run build`) succeeds with 0 TypeScript/linter errors.
+
+### Phase 22 — Alerts & Predictions UI (Completed)
+- **Implemented Views & Routing:**
+  - **`/alerts` ([src/pages/Alerts.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/Alerts.tsx)):**
+    - Comprehensive operational alerts list with real-time risk indicators.
+    - Multi-field filtering (severity: critical/high/medium/low, status: ACTIVE/ACKNOWLEDGED/RESOLVED/DISMISSED, risk category: predicted shortage/expiry/equipment/resource, facility ID, keyword search).
+    - Sorting by timestamp, severity, and status; configurable page size pagination.
+    - 1-click Acknowledge action for active alerts.
+    - Quick Gemini Explain modal with contextual AI root-cause analysis and disclaimer notices.
+    - Direct navigation link to dedicated detail page `/alerts/:id`.
+  - **`/alerts/:id` ([src/pages/AlertDetail.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/AlertDetail.tsx)):**
+    - Dedicated full context view for individual operational risk alerts.
+    - Operational metric tiles: Facility name & ID, Item & batch number, Current stock vs safety threshold, Estimated days to shortage or expiry.
+    - Full lifecycle management (Acknowledge, Mark Resolved with resolution notes modal).
+    - Lifecycle audit trail display (created, acknowledged timestamp/user, resolved timestamp/user/notes).
+    - Integrated **"Explain with Gemini AI"** component with multi-language selector (English, Hindi, Marathi), ground root-cause breakdown, and administrative decision-support disclaimer banner.
+  - **`/predictions` ([src/pages/Predictions.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/Predictions.tsx)):**
+    - Tabbed interface featuring "Demand Predictions" and "Predicted Shortage Risk Overview".
+    - ML demand forecast cards displaying forecasted demand units, confidence score gauges, target dates, and model generation time.
+    - Multi-field filters: search query, facility ID, and minimum confidence score (70%+, 80%+, 90%+).
+    - On-demand "Run Demand Forecast" modal with facility ID, item ID, and historical training window selection (7, 14, 30, 90 days).
+    - Integrated **"Explain Prediction with Gemini"** modal.
+    - Strict probabilistic wording (*"Predicted shortage risk"*, *"Probabilistic estimates"*, *"Decision-support notice"*) avoiding deterministic claims (*"Guaranteed shortage"*).
+- **Routing & RBAC Protection ([src/App.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/App.tsx)):**
+  - Registered `/alerts/:id` under `STAFF_ROLES` protection.
+  - Role restrictions prevent unauthenticated and citizen users from triggering administrative status updates or demand forecast generation.
+### Phase 23 — Redistribution & Approval Workflow (Completed)
+- **Implemented Views & Routing:**
+  - **`/recommendations` ([src/pages/Recommendations.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/Recommendations.tsx)):**
+    - Metric overview cards for Pending Approvals, Approved Transfers, and Rejected / Closed proposals.
+    - Multi-field filtering (status: PENDING, APPROVED, REJECTED, EXECUTED; facility ID filter; keyword search; sorting by date, quantity, status; page size pagination).
+    - Detailed recommendation cards displaying:
+      - Source Facility (name, ID, available surplus stock).
+      - Destination Facility (name, ID, current deficit stock).
+      - Item & Suggested Transfer Quantity.
+      - Priority indicator & Haversine distance (~km apart).
+      - Analytical Rationale & Prediction context (model #, risk assessment #).
+      - Historical human approval action trail (user ID, action, timestamp, notes).
+    - **Interactive Modals:**
+      - **Approval Confirmation Modal:** Shows route summary, suggested volume, optional override quantity, and optional approval notes before executing backend stock movement.
+      - **Rejection Modal:** Captures rejection rationale and closes the proposal without changing inventory.
+      - **Modify Modal:** Allows adjusting suggested quantity, reasoning, and adjustment notes while keeping state in `PENDING`.
+      - **Scan & Generate Recommendations:** On-demand network scan button calling `POST /api/v1/recommendations/generate`.
+    - Real-time action feedback banner for success/error alerts and instant status refresh.
+- **Routing & RBAC Protection ([src/App.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/App.tsx)):**
+  - Registered `/recommendations` under `STAFF_ROLES` protection.
+  - Citizen users are prevented from seeing or triggering action/generation buttons.
+- **Test Suite (`src/__tests__/recommendations.test.tsx`):**
+  - 10 comprehensive Vitest + RTL tests covering rendering, metrics, audit action trail, status/keyword filtering, confirmation dialog approval with override quantity, rejection with notes, modification with custom reasoning, on-demand generation, API failure error banners, and citizen role restrictions.
+  - 53/53 total frontend tests passing across all test suites; production bundle (`npm run build`) built in 5.57s with 0 TypeScript errors.
+
+### Phase 24 — Equipment & Maintenance UI (Completed)
+- **Implemented Views & Routing:**
+  - **`/equipment` ([src/pages/Equipment.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/Equipment.tsx)):**
+    - Equipment fleet directory with KPI tiles (Total Fleet, Operational, Under Service, Non-Functional, Overdue Servicing Alerts).
+    - Multi-field filtering (status: OPERATIONAL, UNDER_MAINTENANCE, NON_FUNCTIONAL, RETIRED; overdue servicing filter; facility ID; keyword search; sorting by name, status, maintenance target, downtime hours; page size pagination).
+    - Equipment card presentation with status color codes, overdue servicing risk indicators, serial numbers, facility context, maintenance horizon, and downtime statistics.
+    - "Register Equipment" modal for authorized administrators (`POST /api/v1/equipment/`).
+  - **`/equipment/:id` ([src/pages/EquipmentDetail.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/pages/EquipmentDetail.tsx)):**
+    - Detailed operational telemetry view (assigned facility, lifecycle dates, last/next maintenance target, total downtime hours/days, uptime percentage gauge).
+    - Overdue maintenance advisory banner.
+    - Historical maintenance records timeline (`GET /api/v1/equipment/{id}/maintenance`).
+    - **"Edit Device"** modal allowing authorized staff to update equipment name, type, serial number, status, maintenance dates, and downtime hours (`PUT /api/v1/equipment/{id}`).
+    - **"Log Maintenance"** modal allowing staff to log service records with work description, technician / vendor name, maintenance type (ROUTINE, REPAIR, INSPECTION, CALIBRATION, EMERGENCY), service date, next scheduled date, downtime hours, cost in INR, and automatic device status transition (`POST /api/v1/maintenance/`).
+- **Services & Types:**
+  - Added `MaintenanceRecord`, `EquipmentDowntimeAnalysis`, `EquipmentCreateInput`, `EquipmentUpdateInput`, `MaintenanceRecordCreateInput` in `src/types/index.ts`.
+  - Added `maintenanceAPI` (`list`, `get`, `create`) and enhanced `equipmentAPI` (`getDowntime`, `getMaintenanceHistory`, `getOverdue`) in `src/services/api.ts`.
+  - Added `equipmentStatusColor` in `src/utils/index.ts`.
+- **Routing & RBAC Protection ([src/App.tsx](file:///d:/Projects/Mediguard%20AI/frontend/src/App.tsx)):**
+  - Registered `/equipment` and `/equipment/:id` under `STAFF_ROLES` protection.
+  - Citizen users are restricted from viewing operational equipment consoles and mutating device records.
+- **Test Suite (`src/__tests__/equipment.test.tsx`):**
+  - 11 comprehensive Vitest + RTL tests covering rendering, KPI metrics, status filtering, search, overdue schedule filtering, device registration, detail telemetry and downtime calculations, device status updates, maintenance event logging, 404 handling, and citizen role restrictions.
+  - 64/64 total frontend tests passing across all test suites; production bundle (`npm run build`) built in 12.98s with 0 TypeScript errors.
+
+---
+
+## 7. Current Focus & Next Steps
+- Implement remaining frontend pages: Audit Logs (`/audit-logs`).
+- Connect AI Assistant page (`AIAssistant.tsx`) to backend `/api/v1/ai/` endpoints (`/chat`, `/explain-alert`, `/explain-prediction`, `/facility-summary`).
+- Polish UI/UX: toast notifications, loading states, error boundaries, responsive design refinements across mobile and desktop views.
+

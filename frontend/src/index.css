@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  /* NIRAMAYA AI Design Tokens */
+
+  /* Navy palette */
+  --color-navy-950: #060D1F;
+  --color-navy-900: #0D1526;
+  --color-navy-800: #1A2540;
+  --color-navy-700: #243050;
+  --color-navy-600: #2E3D68;
+
+  /* Government blue */
+  --color-gov-blue: #2563EB;
+  --color-gov-blue-dark: #1D4ED8;
+  --color-gov-blue-light: #3B82F6;
+
+  /* AI teal accent */
+  --color-ai-teal: #14B8A6;
+  --color-ai-teal-light: #5EEAD4;
+
+  /* Status colors */
+  --color-status-critical: #DC2626;
+  --color-status-warning: #F59E0B;
+  --color-status-healthy: #22C55E;
+  --color-status-stable: #3B82F6;
+
+  /* Surfaces */
+  --color-surface-white: #FFFFFF;
+  --color-surface-off: #F9FAFB;
+  --color-surface-card: #F3F4F6;
+
+  /* Font family */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: #F3F4F6;
+    color: #111827;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* AI pulse animation */
+@keyframes ai-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.ai-pulse {
+  animation: ai-pulse 2s ease-in-out infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Intelligence layer node animation */
+@keyframes node-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.node-float {
+  animation: node-float 3s ease-in-out infinite;
+}
+
+/* Chart forecast dashed line style */
+.recharts-line.forecast path {
+  stroke-dasharray: 6 4;
+}
+
+/* Modal animation */
+@keyframes modal-appear {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-appear {
+  animation: modal-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toast animation */
+@keyframes toast-appear {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.toast-appear {
+  animation: toast-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
